@@ -1,6 +1,7 @@
 var mongoose = require('mongoose')
 
 var recursoSchema = new mongoose.Schema({
+    _id: String,
     dataCriacao: String,
     dataSubmissao: String,
     idProdutor: String,
