@@ -1,0 +1,15 @@
+{
+    "version": "1.0",
+    "encoding": "UTF-8",
+    "algorithm": "sha256",
+    "data": [
+        {
+            "checksum": "96cbe9bd80d36174f9659617f34e41ae38a4ca5c36dbb7609a5e495601d1492a",
+            "path": "data/resource1/metadata.json"
+        },
+        {
+            "checksum": "4660151e111eefd24e91c36b2a5dc5436f66def73bf64405d38587d72005b436",
+            "path": "data/resource1/projeto-rpcw-enunciado.pdf"  
+        }
+    ]
+}
