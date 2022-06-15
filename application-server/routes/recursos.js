@@ -9,6 +9,7 @@ var multer = require('multer')
 var upload = multer({dest: 'uploads'})
 const sZip = require('node-stream-zip')
 const { createHash } = require('crypto');
+const { syncBuiltinESMExports } = require('module');
 
 
 function existe(a,b){
@@ -21,6 +22,20 @@ function existe(a,b){
 function hash(string){
     return createHash('sha256').update(string).digest('hex');
 }
+
+function sleep(time){
+    return new Promise((resp) => {setTimeout(resp,time)})
+}
+
+/*------------------------------------------------   USER  ------------------------------------------ */
+
+router.post('/registar',(req,res,next) => {
+    axios.post("http:localhost:3002/auth/registar", req.body)
+        .then(() => {console.log("Registo bem sucedido")})
+        .catch(err => {console.log("Erro ao registar: " + err)})
+})
+
+/* ----------------------------------------------- RECURSOS ----------------------------------------- */
 
 /*UPLOAD File */
 router.post("/upload", upload.single('myFile') , function(req,res,next){
@@ -160,25 +175,28 @@ router.post("/upload", upload.single('myFile') , function(req,res,next){
             }
         })
         metadata.path = npath
-        // axios.post("http://localhost:3003/api/recursos",metadata)
-        //     .then(() => {res.redirect("/")})
-        //     .catch(err => {console.log("Erro a enviar para a BD: " + err)})
+        axios.post("http://localhost:3003/api/recursos",metadata)
+            .then(() => {res.redirect("/")})
+            .catch(err => {console.log("Erro a enviar para a BD: " + err)})
+        }
+        else{
+            warnings.push("O conteúdo que tentou inserir já existe!")
+        }
+    try{
+        fs.unlinkSync(qpath);
+    }catch(err){
+        console.log("Erro a eliminar ficheiro da pasta uploads: " + err)
+    }
+    sleep(300)
+    .then(() => {
         try{
             fs.unlinkSync(npath+"/"+req.file.originalname.split('.')[0]+"/RRD-SIP.json")
             fs.unlinkSync(npath+"/"+req.file.originalname.split('.')[0]+"/metadata.json")
         }catch(err){
             console.log("Erro a remover ficheiros manifesto e metadados: " + err)
         }
-    }
-    else{
-        warnings.push("O conteúdo que tentou inserir já existe!")
-    }
-    try{
-        console.log(qpath)
-        fs.unlinkSync(qpath);
-    }catch(err){
-        console.log("Erro a eliminar ficheiro da pasta uploads: " + err)
-    }
+    })
+
 })
 
 /*Listar todos os recursos ou só um dos recursos*/
