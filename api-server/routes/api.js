@@ -45,7 +45,7 @@ router.get('/recursos', function(req, res, next) {
 router.post('/recursos', function(req, res, next) {
   Recurso.inserir(req.body)
     .then(dados => res.status(201).jsonp(dados))
-    .catch(e => res.status(501).jsonp({error: e}))
+    .catch(e => {console.log(e);res.status(501).jsonp({error: e})})
 });
 
 /* PUT de um recurso. */

@@ -8,8 +8,7 @@ var fs = require('fs')
 var multer = require('multer')
 var upload = multer({dest: 'uploads'})
 const sZip = require('node-stream-zip')
-var csum = require("../public/javascripts/checksum")
-
+const { createHash } = require('crypto');
 
 
 function existe(a,b){
@@ -19,16 +18,21 @@ function existe(a,b){
     return -1
 }
 
+function hash(string){
+    return createHash('sha256').update(string).digest('hex');
+}
+
 /*UPLOAD File */
 router.post("/upload", upload.single('myFile') , function(req,res,next){
 
-    var manifesto = 0
-    var informacao = 0
-    var manifValido = 1
-    var infoValida = 1
-    var fileList = []
-    var metadata = {}
-    var manifInfo = {}
+    manifesto = 0
+    informacao = 0
+    manifValido = 1
+    infoValida = 1
+    fileList = []
+    metadata = {}
+    manifInfo = {}
+    warnings = []
 
     if(req.file.mimetype == "application/zip" || req.file.mimetype == "application/x-zip-compressed"){
         console.log("ZIP File found")
@@ -51,7 +55,6 @@ router.post("/upload", upload.single('myFile') , function(req,res,next){
                 manifInfo = JSON.parse(data)
 
                 manifInfo.data.forEach(f => {
-                    console.log("Lista de ficheiros: " + fileList)
                     if((index=existe(f.path,fileList))==-1){
                         manifesto = 0
                         manifValido = 0
@@ -59,7 +62,7 @@ router.post("/upload", upload.single('myFile') , function(req,res,next){
                     }
                 })
                 if(manifesto == 1)
-                    console.log("manifesto valido")
+                    console.log("Manifesto valido")
             }
             else{
 
@@ -94,13 +97,12 @@ router.post("/upload", upload.single('myFile') , function(req,res,next){
                 metadata.dataSubmissao = infoInfo.dataSubmissao
                 metadata.idSubmissor = infoInfo.idSubmissor
                 //metadata.dataSubmissao = new Date().toISOString().substring(0,16).split('T').join(' ')
-                //#endregio//metadata.idSubmissor = 
-                console.log("Zip valido")
+                //metadata.idSubmissor = 
+                console.log("ZIP valido")
                 zip.close()
                 next()
             }
             else{
-                var warnings = []
                 if(manifesto != 1) warnings.push("Confirme que o ZIP tem o ficheiro de manifesto (RRD-SIP.json)!");
                 if(informacao != 1) warnings.push("Confirme que o ZIP tem o ficheiro de metadados (metadata.json)!");
                 if(manifValido != 1) warnings.push("Confirme que o conteúdo do ficheiro de manifesto está correto!");
@@ -124,25 +126,51 @@ router.post("/upload", upload.single('myFile') , function(req,res,next){
         try{
             fs.unlinkSync(qpath)
         }catch(err){
-            console.log("Error at upload 1: " + err);
+            console.log("Error at upload 2: " + err);
         }
 
-        var aviso = ["O ficheiro deverá estar em formato ZIP"]
+        var warning = ["O ficheiro deverá estar em formato ZIP"]
         // Novamente render de uma pagina com os tipos e os avisos
     }
 }, function(req,res){
-    console.log("Entrei aqui onde devia")
+
+    const zip = new sZip({
+        file: req.file.path,
+        storeEntries : true
+    })
+
     // Caso o ZIP seja válido, vem do next em cima
     var pdir = path.normalize(__dirname+"/..")
     let qpath = pdir + "/" + req.file.path
-    let tname = csum.hash(metadata.titulo+metadata.dataCriacao)
+    let tname = hash(metadata.titulo+metadata.dataCriacao)
     let tname1 = tname.substring(0,tname.length/2)
     let tname2 = tname.substring(tname.length/2+1,tname.length)
-    console.log("T1: " + tname1)
-    console.log("T2: " + tname2)
-
-    // let npath = pdir + "/public/fileStorage/" + tname1 + "/" + tname2 + "/data"
-
+    let npath = pdir + "/public/fileStorage/" + tname1 + "/" + tname2
+    if(!fs.existsSync(npath)){
+        fs.mkdir(npath, {recursive:true}, err => {
+            if(err) console.log("Erro a criar new path: " + err)
+            else
+            {    
+                zip.extract(null,npath, err => {
+                    console.log(err ? "Error extracting: " + err : "Extracted")
+                    zip.close()
+                })
+            }
+        })
+        metadata.path = npath
+        axios.post("http://localhost:3003/api/recursos",metadata)
+            .then(() => {res.redirect("/")})
+            .catch(err => {console.log("Erro a enviar para a BD: " + err)})
+    }
+    else{
+        warnings.push("O conteúdo que tentou inserir já existe!")
+    }
+    try{
+        console.log(qpath)
+        fs.unlinkSync(qpath);
+    }catch(err){
+        console.log("Erro a eliminar ficheiro da pasta uploads: " + err)
+    }
 })
 
 /*Listar todos os recursos ou só um dos recursos*/
