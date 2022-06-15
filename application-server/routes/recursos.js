@@ -55,11 +55,13 @@ router.post("/upload", upload.single('myFile') , function(req,res,next){
                 manifInfo = JSON.parse(data)
 
                 manifInfo.data.forEach(f => {
-                    if((index=existe(f.path,fileList))==-1){
-                        manifesto = 0
-                        manifValido = 0
-                        console.log("Ficheiro " + f.path + " não existe!")
-                    }
+                    extension = f.path.split('.')[1]
+                    if(extension != 'json' && extension != 'xml')
+                        if((index=existe(f.path,fileList))==-1){
+                            manifesto = 0
+                            manifValido = 0
+                            console.log("Ficheiro " + f.path + " não existe!")
+                        }
                 })
                 if(manifesto == 1)
                     console.log("Manifesto valido")
@@ -158,9 +160,15 @@ router.post("/upload", upload.single('myFile') , function(req,res,next){
             }
         })
         metadata.path = npath
-        axios.post("http://localhost:3003/api/recursos",metadata)
-            .then(() => {res.redirect("/")})
-            .catch(err => {console.log("Erro a enviar para a BD: " + err)})
+        // axios.post("http://localhost:3003/api/recursos",metadata)
+        //     .then(() => {res.redirect("/")})
+        //     .catch(err => {console.log("Erro a enviar para a BD: " + err)})
+        try{
+            fs.unlinkSync(npath+"/"+req.file.originalname.split('.')[0]+"/RRD-SIP.json")
+            fs.unlinkSync(npath+"/"+req.file.originalname.split('.')[0]+"/metadata.json")
+        }catch(err){
+            console.log("Erro a remover ficheiros manifesto e metadados: " + err)
+        }
     }
     else{
         warnings.push("O conteúdo que tentou inserir já existe!")
