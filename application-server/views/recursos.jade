@@ -1,0 +1,40 @@
+extends layout 
+
+block content
+  .w3-container
+    h1 Listagem dos recursos disponíveis
+
+    if recursos.length > 0
+        .w3-container(style='margin-top: 35px;')
+                table.w3-text-black.w3-table-all.w3-hoverable.w3-centered.w3-large(style='margin-bottom: 50px;')
+                    tr
+                        th Data de criação
+                        th Data de submissão
+                        th Id do Produtor
+                        th Id do Submissor
+                        th Título 
+                        th Tipo de conteúdo
+                    each r in recursos
+                        tr(data-href="http://localhost:3001/recursos?id=" + r._id)
+                            td= r.dataCriacao
+                            td= r.dataSubmissao
+                            td= r.idProdutor
+                            td= r.idSubmissor
+                            td= r.titulo 
+                            td= r.tipo
+    else 
+        p Ainda não existe nenhum recurso para apresentar...
+
+
+
+  script. 
+    document.addEventListener("DOMContentLoaded", () => {
+      const rows = document.querySelectorAll("tr[data-href]");
+      
+      rows.forEach(row => {
+        console.log(row);
+        row.addEventListener("click", () => {
+          window.location.href = row.dataset.href;
+        });
+      });
+    });

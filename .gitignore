@@ -1,3 +1,4 @@
 api-server/node_modules/*
 application-server/node_modules/*
 auth-server/node_modules/*
+node_modules/
