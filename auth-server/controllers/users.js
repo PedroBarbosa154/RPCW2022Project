@@ -7,8 +7,16 @@ module.exports.registar = user =>{
     return novoUser.save()
 }
 
+//Consultar todos os utilizadores
+module.exports.consultarUtilizadores = () => {
+    return User
+        .find({},{username:1,nivel:1})
+        .sort({username:1})
+        .exec()
+}
+
 //Consultar um user
-module.exports.consultar = username => {
+module.exports.consultarUtilizador = username => {
     return User
         .findOne({username: username})
         .exec()

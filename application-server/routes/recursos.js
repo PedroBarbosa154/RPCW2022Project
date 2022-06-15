@@ -51,14 +51,18 @@ router.post("/upload", upload.single('myFile') , function(req,res,next){
                 manifInfo = JSON.parse(data)
 
                 manifInfo.data.forEach(f => {
-                    if(existe(f,fileList)==-1){
+                    console.log("Lista de ficheiros: " + fileList)
+                    if((index=existe(f.path,fileList))==-1){
                         manifesto = 0
                         manifValido = 0
+                        console.log("Ficheiro " + f.path + " não existe!")
                     }
                 })
-                console.log("manifesto valido")
+                if(manifesto == 1)
+                    console.log("manifesto valido")
             }
             else{
+
                 manifesto = 0
             }
 
@@ -70,6 +74,7 @@ router.post("/upload", upload.single('myFile') , function(req,res,next){
                 if(!(infoInfo.hasOwnProperty('dataCriacao') && infoInfo.hasOwnProperty('titulo') && infoInfo.hasOwnProperty('tipo') && infoInfo.hasOwnProperty('idProdutor'))){
                     informacao = 0
                     infoValida = 0
+                    console.log("Info invalida")
                 }
                 else{
                     metadata.dataCriacao = infoInfo.dataCriacao
@@ -126,7 +131,7 @@ router.post("/upload", upload.single('myFile') , function(req,res,next){
         // Novamente render de uma pagina com os tipos e os avisos
     }
 }, function(req,res){
-    console.log("Entrei aqui")
+    console.log("Entrei aqui onde devia")
     // Caso o ZIP seja válido, vem do next em cima
     var pdir = path.normalize(__dirname+"/..")
     let qpath = pdir + "/" + req.file.path
