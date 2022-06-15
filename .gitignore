@@ -1,2 +1,2 @@
-node_modules/
-application-server/uploads/*
+api-server/node_modules/
+application-server/node_modules/

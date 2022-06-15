@@ -7,7 +7,8 @@ var recursoSchema = new mongoose.Schema({
     idProdutor: String,
     idSubmissor: String,
     titulo: String,
-    tipo: String
+    tipo: String,
+    path: String
 })
 
 module.exports = mongoose.model('recursos', recursoSchema)
