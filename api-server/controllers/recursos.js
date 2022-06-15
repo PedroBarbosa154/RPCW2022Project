@@ -4,6 +4,7 @@ var mongoose = require('mongoose')
 //Inserir Recurso (metadados)
 module.exports.inserir = metadados =>{
     var novoRecurso = new Recurso(metadados)
+    novoRecurso._id = new mongoose.Types.ObjectId()
     return novoRecurso.save()
 }
 
