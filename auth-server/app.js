@@ -19,7 +19,7 @@ db.once('open', function() {
   console.log("Conexão ao MongoDB realizada com sucesso...")
 });
 
-var usersRouter = require('./routes/users');
+var authRouter = require('./routes/autenticacao');
 
 var app = express();
 
@@ -65,7 +65,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use('/users', usersRouter);
+app.use('/auth', authRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

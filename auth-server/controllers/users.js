@@ -15,6 +15,14 @@ module.exports.consultarUtilizadores = () => {
         .exec()
 }
 
+//Consultar utilizadores por nível
+module.exports.consultarUtilizadoresNivel = nivel => {
+    return User
+        .find({nivel:nivel})
+        .sort({username:1})
+        .exec()
+}
+
 //Consultar um user
 module.exports.consultarUtilizador = username => {
     return User
@@ -23,7 +31,7 @@ module.exports.consultarUtilizador = username => {
 }
 
 //Remover um user 
-module.exports.remover = username => {
+module.exports.eliminar = username => {
     return User
         .deleteOne({username: username})
         .exec()
