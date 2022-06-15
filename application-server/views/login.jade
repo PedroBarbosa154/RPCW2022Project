@@ -1,0 +1,16 @@
+extends layout 
+
+block content
+    include navbar.jade
+    h1(style="text-align: center;") Login Utilizador
+    .w3-container(style="display:flex;")
+      form.w3-container(action="/users/login", method="post")
+        .w3-container(style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); padding: 10px;")
+          .w3-cell-row
+            label.w3-text-grey Username
+            input.w3-input.w3-border(type="text", name="username", placeholder="Enter your username")
+          .w3-cell-row
+            label.w3-text-grey Password
+            input.w3-input.w3-border(type="password", name="password", placeholder="Enter your password")
+          .w3-cell-row.w3-middle-align 
+            button.w3-btn.w3-border.w3-margin.w3-light-grey(type="submit" value="Login") Login

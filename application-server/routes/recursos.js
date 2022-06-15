@@ -27,14 +27,6 @@ function sleep(time){
     return new Promise((resp) => {setTimeout(resp,time)})
 }
 
-/*------------------------------------------------   USER  ------------------------------------------ */
-
-router.post('/registar',(req,res,next) => {
-    axios.post("http:localhost:3002/auth/registar", req.body)
-        .then(() => {console.log("Registo bem sucedido")})
-        .catch(err => {console.log("Erro ao registar: " + err)})
-})
-
 /* ----------------------------------------------- RECURSOS ----------------------------------------- */
 
 /*UPLOAD File */
