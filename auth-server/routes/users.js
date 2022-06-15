@@ -1,49 +1,71 @@
 var express = require('express');
 var router = express.Router();
+const { createHash } = require('crypto');
 var User = require('../controllers/users');
 
 var passport = require('passport')
 var jwt = require('jsonwebtoken')
 
-/* GET users listing. */
+/* GET lista de utilizadores. */
 router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
+  User.consultarUtilizadores()
+    .then(response => {
+      console.log('GET de todos os utilizadores')
+      res.status(200).jsonp(response)
+    })
+    .catch(error => res.status(504).jsonp(error))
 });
 
 /* POST login */
-router.post('/login', passport.authenticate('local'), function(req,res,next){
-  jwt.sign({ username: req.user.username, level: req.user.level, 
-    sub: 'aula de DAW2020'}, 
-    "DAW2020",
-    {expiresIn: 3600},
+router.post('/login', function(req,res,next){
+  passport.authenticate('local', function(err,user, info){
+    console.log(err)
+    console.log(user)
+    if(err)
+      return next(err);
+    if(!user)
+      return next(info.message);
+  })(req,res,next)
+  jwt.sign({ username: user.username, nivel: user.nivel, 
+    sub: 'ProjetoRPCW2022'}, 
+    "ProjetoRPCW2022",
+    {expiresIn: '1h'},
     function(e, token) {
-      if(e) res.status(500).jsonp({error: "Erro na geração do token: " + e}) 
+      if(e) res.status(503).jsonp({error: "Erro na geração do token: " + e}) 
       else res.status(201).jsonp({token: token})
-  });
+  })
 });
 
 /* POST users */
-router.post('/registar', function(req,res,next) {
+router.post('/registar', function(req,res) {
   console.log(req.body)
-  var username = req.body.username 
-  User.consultar(username)
-    .then(response => {
-      if(response == null){
-        User.registar(req.body)
-          .then(response => {
-             console.log('Registo do utilizador com username ' + username + ' realizado com sucesso!')
-             res.status(201).jsonp(response)
-          })
-          .catch(error => res.status(500).jsonp(error))
-      }
-      else res.status(501).jsonp("O username utilizado já se encontra registado!")
-    })
-    .catch(error => res.status(502).jsonp(error))
+  //Encriptação da password antes de inserir na BD
+  req.body.password = createHash('sha256').update(req.body.password).digest('hex');
+  User.registar(req.body)
+    .then(dados => res.status(201).jsonp({dados: dados}))
+    .catch(e => res.status(501).jsonp({error: e}))
 })
 
-/* GET users */
-router.get('/users', function(res,res,next) {
-  User.
+/* GET users 
+router.get('/utilizadores', function(req,res,next) {
+  User.consultarUtilizadores()
+    .then(response => {
+      console.log('GET de todos os utilizadores')
+      res.status(200).jsonp(response)
+    })
+    .catch(error => res.status(504).jsonp(error))
+})
+*/
+
+/* GET user */
+router.get('/utilizador/:username', function(req,res,next) {
+  username = req.params.username
+  User.consultarUtilizador(username)
+    .then(response => {
+      console.log('GET do utilizador ' + username)
+      res.status(200).jsonp(response)
+    })
+    .catch(error => res.status(505).jsonp(error))
 })
 
 module.exports = router;
