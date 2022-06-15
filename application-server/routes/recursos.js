@@ -8,6 +8,7 @@ var fs = require('fs')
 var multer = require('multer')
 var upload = multer({dest: 'uploads'})
 const sZip = require('node-stream-zip')
+var csum = require("../public/javascripts/checksum")
 
 
 
@@ -19,7 +20,7 @@ function existe(a,b){
 }
 
 /*UPLOAD File */
-router.post("/upload", upload.single('myFile') , (req,res) => {
+router.post("/upload", upload.single('myFile') , function(req,res,next){
 
     var manifesto = 0
     var informacao = 0
@@ -45,49 +46,99 @@ router.post("/upload", upload.single('myFile') , (req,res) => {
 
             // Verificar se o manifesto existe e se os ficheiros mencionados no mesmo existem
             if((index=existe('RRD-SIP.json',fileList))!=-1){
-                manifesto=1
+                manifesto = 1
                 data = zip.entryDataSync(fileList[index]).toString("utf8")
                 manifInfo = JSON.parse(data)
 
                 manifInfo.data.forEach(f => {
                     if(existe(f,fileList)==-1){
-                        manifesto=0
-                        manifValido=0
+                        manifesto = 0
+                        manifValido = 0
                     }
                 })
                 console.log("manifesto valido")
             }
+            else{
+                manifesto = 0
+            }
 
             //  Verificar se os metados existem e estão corretamente preenchidos
             if((index=existe("metadata.json",fileList))!=-1){
-                informacao=1
+                informacao = 1
                 data = zip.entryDataSync(fileList[index]).toString("utf8")
                 infoInfo = JSON.parse(data)
-                if(!(infoInfo.hasOwnProperty('dataCriacao') && infoInfo.hasOwnProperty('titulo') && infoInfo.hasOwnProperty('titulo') && infoInfo.hasOwnProperty('idProdutor'))){
+                if(!(infoInfo.hasOwnProperty('dataCriacao') && infoInfo.hasOwnProperty('titulo') && infoInfo.hasOwnProperty('tipo') && infoInfo.hasOwnProperty('idProdutor'))){
                     informacao = 0
                     infoValida = 0
                 }
                 else{
                     metadata.dataCriacao = infoInfo.dataCriacao
-                    metadata.dataSubmissao = infoInfo.dataSubmissao
                     metadata.idProdutor = infoInfo.idProdutor
-                    metadata.idSubmissor = infoInfo.idSubmissor
                     metadata.titulo = infoInfo.titulo
                     metadata.tipo = infoInfo.tipo
+                    console.log("Metadados válidos")
                 }
-
-                
-
+            }
+            else{
+                informacao = 0
             }
 
+            if(manifesto==1 && informacao==1){
+                // Para já fica o que está nos metadados mas posteriormente adicionamos
+                // a data em que fizer efetivamente upload e 
+                metadata.dataSubmissao = infoInfo.dataSubmissao
+                metadata.idSubmissor = infoInfo.idSubmissor
+                //metadata.dataSubmissao = new Date().toISOString().substring(0,16).split('T').join(' ')
+                //#endregio//metadata.idSubmissor = 
+                console.log("Zip valido")
+                zip.close()
+                next()
+            }
+            else{
+                var warnings = []
+                if(manifesto != 1) warnings.push("Confirme que o ZIP tem o ficheiro de manifesto (RRD-SIP.json)!");
+                if(informacao != 1) warnings.push("Confirme que o ZIP tem o ficheiro de metadados (metadata.json)!");
+                if(manifValido != 1) warnings.push("Confirme que o conteúdo do ficheiro de manifesto está correto!");
+                if(infoValida != 1) warnings.push("Confirme que o conteúdo do ficheiro de metadados está correto!");
             
+                var pdir = path.normalize(__dirname+"/..")
+                let qpath = pdir + "/" + req.file.path
+                try{
+                    fs.unlinkSync(qpath)
+                }catch(err){
+                    console.log("Error at upload 1: " + err);
+                }
+
+                //Supostamente falta aqui qualquer coisa dos tipos e render de uma página com os avisos tambem
+            }
         });
-
-    }else {
-        console.log("Ficheiro inválido, deve ser um zip")
     }
+    else {
+        var pdir = path.normalize(__dirname+"/..")
+        let qpath = pdir + "/" + req.file.path
+        try{
+            fs.unlinkSync(qpath)
+        }catch(err){
+            console.log("Error at upload 1: " + err);
+        }
 
-});
+        var aviso = ["O ficheiro deverá estar em formato ZIP"]
+        // Novamente render de uma pagina com os tipos e os avisos
+    }
+}, function(req,res){
+    console.log("Entrei aqui")
+    // Caso o ZIP seja válido, vem do next em cima
+    var pdir = path.normalize(__dirname+"/..")
+    let qpath = pdir + "/" + req.file.path
+    let tname = csum.hash(metadata.titulo+metadata.dataCriacao)
+    let tname1 = tname.substring(0,tname.length/2)
+    let tname2 = tname.substring(tname.length/2+1,tname.length)
+    console.log("T1: " + tname1)
+    console.log("T2: " + tname2)
+
+    // let npath = pdir + "/public/fileStorage/" + tname1 + "/" + tname2 + "/data"
+
+})
 
 /*Listar todos os recursos ou só um dos recursos*/
 router.get('/', (req,res) => {
