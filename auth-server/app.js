@@ -4,6 +4,16 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
+//Ligação à base de dados
+var mongoose = require('mongoose')
+var mongoDB = 'mongodb://127.0.0.1/ProjetoRPCW2022'
+mongoose.connect(mongoDB, {useNewUrlParser: true, useUnifiedTopology: true})
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, "Erro de conexão ao MongoDB..."))
+db.once('open',function(){
+  console.log("Conexão ao MongoDB realizada com sucesso...")
+})
+
 var usersRouter = require('./routes/users');
 
 var app = express();
