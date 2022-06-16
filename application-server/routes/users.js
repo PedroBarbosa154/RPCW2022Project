@@ -3,8 +3,21 @@ var router = express.Router();
 var axios = require('axios');
 var jwt = require('jsonwebtoken');
 
+//É melhor verificar o token em todas as rotas que precisam de login por causa dos acessos vindos do Postman
+function verificaToken(req, res, next){
+  var myToken = req.cookies.token;
+  console.log(myToken)
+  jwt.verify(myToken, 'ProjetoRPCW2022', function(e, payload){
+    if(e) res.status(401).jsonp({error: 'Erro na verificação do token: ' + e})
+    else {
+      console.log("Token verificado e válido")
+      next()
+    } 
+  })
+}
+
 /* GET users listing. */
-router.get('/', function(req, res, next) {
+router.get('/', verificaToken, function(req, res, next) {
   if(req.cookies.nivel === 'admin')
     axios.get('http://localhost:3002/auth/users?token=' + req.cookies.token)
       .then(data => {
@@ -63,7 +76,7 @@ router.post('/login',(req,res,next) => {
       })
 })
 
-router.get('/logout', (req,res,next)=> {
+router.get('/logout', verificaToken, (req,res,next)=> {
   res.cookie('token',undefined);
   res.cookie('nivel',undefined);
   res.clearCookie('token');

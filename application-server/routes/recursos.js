@@ -9,6 +9,20 @@ var multer = require('multer');
 var upload = multer({dest: 'uploads'});
 const sZip = require('node-stream-zip');
 const { createHash } = require('crypto');
+var jwt = require('jsonwebtoken');
+
+//É melhor verificar o token em todas as rotas que precisam de login por causa dos acessos vindos do Postman
+function verificaToken(req, res, next){
+  var myToken = req.cookies.token;
+  console.log(myToken)
+  jwt.verify(myToken, 'ProjetoRPCW2022', function(e, payload){
+    if(e) res.status(401).jsonp({error: 'Erro na verificação do token: ' + e})
+    else {
+      console.log("Token verificado e válido")
+      next()
+    } 
+  })
+}
 
 
 function existe(a,b){
@@ -29,7 +43,7 @@ function sleep(time){
 /* ----------------------------------------------- RECURSOS ----------------------------------------- */
 
 /*UPLOAD File */
-router.post("/upload", upload.single('myFile') , function(req,res,next){
+router.post("/upload", verificaToken, upload.single('myFile') , function(req,res,next){
     manifesto = 0
     informacao = 0
     manifValido = 1
@@ -204,7 +218,7 @@ router.post("/upload", upload.single('myFile') , function(req,res,next){
 })
 
 /*Listar todos os recursos ou só um dos recursos*/
-router.get('/', (req,res) => {
+router.get('/', verificaToken, (req,res) => {
     var q = url.parse(req.url,true).query
     
     if(q.id != undefined){
@@ -234,7 +248,7 @@ router.get('/', (req,res) => {
     }
 });
 
-router.get("/administrar", (req,res,next) => {
+router.get("/administrar", verificaToken, (req,res,next) => {
     console.log("Página de administração de recursos")
     // res.redirect("/recursos");
     if(req.cookies.nivel === 'admin')
