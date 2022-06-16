@@ -44,3 +44,10 @@ module.exports.alterarNivel = (username, nivel) => {
         .exec()
 }
 
+//Alterar o user 
+module.exports.alterarUser = (username, newUser, nivel, password) => {
+    return User
+        .findOneAndUpdate({username: username},{$set: {username: newUser,nivel: nivel, password: password}})
+        .exec()
+}
+

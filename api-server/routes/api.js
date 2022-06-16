@@ -18,7 +18,7 @@ function verificaToken(req, res, next){
 }
 
 function verificaNivel(autorizados,req,res,next){
-  if(autorizados.includes(req.nivel))
+  if(autorizados.includes(req.user.nivel))
     next()
   else
     res.status(403).jsonp({error: "Não tem nível de acesso suficiente"})
@@ -43,8 +43,8 @@ router.get('/recursos', verificaToken, function(req, res, next) {
         res.status(200).jsonp(dados)
       })
       .catch(e => res.status(503).jsonp({error: e}))
-  } else if(q.q != undefined){
-    var pal = q.q
+  } else if(q.search!= undefined){
+    var pal = q.search
     Recurso.listarComPalavra(pal)
       .then(dados => {
         // console.log('Resposta: ' + dados)
@@ -62,6 +62,36 @@ router.get('/recursos', verificaToken, function(req, res, next) {
   }
 });
 
+/* DELETE de um recurso VERIFICAR SE FUNCIONA*/ 
+
+router.delete('/recursos/:id', verificaToken, function(req,res,next) {
+  var id = req.params.id
+  console.log(id)
+  Recurso.listarPorRid(id)
+    .then(dados => {
+      recurso = dados
+      console.log(recurso)
+      console.log(req.user)
+      if (req.user.nivel == "admin" || recurso.idSubmissor == req.user.username) {
+        next()
+      } else {
+        res.status(401).jsonp({error: "Não tem permissões"})
+      }
+    })
+    .catch(error => {
+      res.status(507).jsonp({error:error})
+    })
+}, function(req,res) {
+  var id = req.params.id 
+  Recurso.eliminarRecurso(id)
+    .then(dados => {
+      res.status(200).jsonp(dados)
+    })
+    .catch(error => {
+      res.status(506).jsonp({error:error})
+    })
+})
+
 /* POST de um recurso. */
 router.post('/recursos', verificaToken, function(req,res,next){verificaNivel(["admin","produtor"],req,res,next)}, function(req, res) {
   Recurso.inserir(req.body)
@@ -71,10 +101,32 @@ router.post('/recursos', verificaToken, function(req,res,next){verificaNivel(["a
 
 /* PUT de um recurso. */
 router.put('/recursos/:rid', verificaToken, function(req,res,next){verificaNivel(["admin","produtor"],req,res,next)}, function(req, res) {
-  var rid = req.params.rid
-  Recurso.atualizar(rid, req.body.tipo)
-    .then(dados => res.status(201).jsonp(dados))
-    .catch(e => res.status(505).jsonp({error: e}))
+  var rid = req.params.id
+  Recurso.listarPorRid(id)
+    .then(dados => {
+      recurso = dados
+      console.log(recurso)
+      console.log(req.user)
+      if(req.user.nivel == "admin" || recurso.idSubmissor == req.user.username) {
+        next()
+      } else {
+        res.status(401).jsonp({error: "Não tem permissões"})
+      }
+    })
+    .catch(error => {
+      res.status(505).jsonp({error: error})
+    })
+}, function(req, res) {
+  var rid = req.params.id
+  var titulo = req.body.titulo
+  var tipo = req.body.tipo
+  if (titulo && tipo) {
+    Recurso.atualizarTipoTitulo(rid,titulo,tipo)
+      .then(dados => res.status(204).jsonp({dados: dados}))
+      .catch(error => res.status(508).jsonp({error: error}))
+  } else {
+    return res.status(509).jsonp({error: 'Falta indicar o título e/ou o tipo!'})
+  }
 });
 
 module.exports = router;

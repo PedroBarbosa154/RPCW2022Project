@@ -29,15 +29,29 @@ module.exports.listarPorTipo = tipo => {
 }
 
 //Listar os recursos que contenham uma palavra no titulo
-module.exports.listarPorTipo = pal => {
+module.exports.listarComPalavra = pal => {
     return Recurso
-        .find({titulo: {$regex: pal}})
+        .find({titulo: new RegExp(pal,'i')})
         .exec()
 }
 
 //Listar um recurso com id igual a rid
 module.exports.listarPorRid = rid => {
     return Recurso
-        .findOne({_id:mongoose.Types.ObjectId(rid)})
+        .findOne({_id:rid})
+        .exec()
+}
+
+//Eliminar um recurso por rid
+module.exports.eliminarRecurso = rid => {
+    return Recurso
+        .findOneAndDelete({_id:rid})
+        .exec()
+}
+
+//Alterar o título e o tipo de um Recurso 
+module.exports.atualizarTipoTitulo = (rid, titulo, tipo) => {
+    return Recurso
+        .findOneAndUpdate({_id:rid},{$set: {titulo: titulo, tipo: tipo}})
         .exec()
 }

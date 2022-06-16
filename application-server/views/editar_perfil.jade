@@ -1,0 +1,22 @@
+extends layout 
+
+block content
+  .w3-container
+    h1= title 
+
+    .w3-container(style='margin-top: 50px;')
+        form.w3-container(action='/users/perfil' method='POST')
+            .w3-row-padding
+                .w3-col.s6
+                    label(for='username')
+                        b Username
+                    input#username.w3-input.w3-border.w3-light-grey(type='text' value=user.username name='username')
+                    br
+                .w3-col.s6
+                    label(for='password')
+                        b Password
+                    input#username.w3-input.w3-border.w3-light-grey(type='password' value=user.password name='password')
+                    br
+            .w3-container.w3-center
+                input.w3-btn.w3-green.w3-margin(type='submit' value='Confirmar edição')
+                input.w3-btn.w3-red.w3-margin(type='reset' value='Limpar valores')

@@ -224,7 +224,7 @@ router.get('/', verificaToken, (req,res) => {
     if(q.id != undefined){
         //Apresentar a página de um recurso específico
         var idRecurso = q.id
-        console.log('Listar recurso com id ' + idRecurso)
+        // console.log('Listar recurso com id ' + idRecurso)
         axios.get('http://localhost:3003/api/recursos/' + idRecurso + "?token=" + req.cookies.token)
             .then(response => {
                 recurso = response.data
@@ -236,7 +236,7 @@ router.get('/', verificaToken, (req,res) => {
             })
     }
     else{
-        console.log("Listar recursos")
+        // console.log("Listar recursos")
         axios.get('http://localhost:3003/api/recursos?token=' + req.cookies.token)
             .then(response => {
                 recursos = response.data
@@ -249,19 +249,86 @@ router.get('/', verificaToken, (req,res) => {
 });
 
 router.get("/administrar", verificaToken, (req,res,next) => {
-    console.log("Página de administração de recursos")
-    // res.redirect("/recursos");
+    var q = url.parse(req.url,true).query
+    console.log(q.tipo)
     if(req.cookies.nivel === 'admin')
-        axios.get('http://localhost:3003/api/recursos?token=' + req.cookies.token)
-                .then(response => {
-                    recursos = response.data
-                    res.render('recursos_admin',{title: 'Recursos', recursos: recursos, logged:'true',nivel:req.cookies.nivel});
+        if(q.tipo!=undefined){
+            axios.get("http://localhost:3003/api/recursos?tipo=" + q.tipo + "&token=" + req.cookies.token)
+                .then(data => {
+                    res.render('recursos_admin',{title:'Recursos', recursos:data.data,logged:'true',nivel:req.cookies.nivel})
                 })
-                .catch(error => {
-                    res.render('error', {error: error});
+                .catch(erro => {
+                    console.log("Erro ao admiistrar tipo" + q.tipo + ": " + erro)
                 })
+        }
+        else{
+            console.log("entrei aqui")
+            axios.get('http://localhost:3003/api/recursos?token=' + req.cookies.token)
+                    .then(response => {
+                        recursos = response.data
+                        res.render('recursos_admin',{title: 'Recursos', recursos: recursos, logged:'true',nivel:req.cookies.nivel});
+                    })
+                    .catch(error => {
+                        res.render('error', {error: error});
+                    })
+        }
     else
         res.render("warnings",{warnings:["Não tem nível de acesso a esta página!"]})
 })
+
+router.get('/search', (req,res,next)=> {
+    var q = url.parse(req.url,true).query
+    if (q.search!=''){
+        axios.get("http://localhost:3003/api/recursos?search=" + q.search + "&token=" + req.cookies.token)
+            .then(data => {
+                res.render('recursos',{recursos:data.data,logged:'true',nivel:req.cookies.nivel})
+            })
+            .catch(erro => {
+                console.log("Erro a pesquisar por regexp: " + erro)
+                res.render('error', {error:erro})
+            })
+    }
+    else{
+        res.redirect('/')
+    }
+});
+
+router.get("/tipo", (req,res,next) =>{
+    var q = url.parse(req.url,true).query
+    if(q.tipo!=''){
+        axios.get("http://localhost:3003/api/recursos?tipo="+q.tipo+"&token="+req.cookies.token)
+            .then(data => {
+                res.render('recursos',{recursos:data.data,logged:'true',nivel:req.cookies.nivel})
+            })
+            .catch(erro => {
+                console.log("Erro a pesquisar por tipo: " + erro)
+                res.render('error',{error:erro})
+            })
+    }
+    else{
+        res.redirect('/')
+    }
+});
+
+
+
+
+router.get('/eliminar/:id', (req,res,next) => {
+    var id = req.params.id
+    if (id != undefined) {
+        console.log(id)
+        axios.delete("http://localhost:3003/api/recursos/" + id + "?token=" + req.cookies.token)
+            .then(data => {
+                console.log('Recurso eliminado com sucesso')
+                res.redirect('/recursos/administrar')
+            })
+            .catch(error => {
+                console.log('Erro ao eliminar o recurso ' + id + ': ' + error)
+                res.render('error', {error: error});
+            })
+    }
+})
+
+
 
 module.exports = router;

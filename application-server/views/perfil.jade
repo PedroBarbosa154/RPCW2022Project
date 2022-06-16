@@ -1,0 +1,25 @@
+extends layout 
+
+block content
+  
+  include navbar.jade 
+
+  .w3-container
+    .w3-row
+        .w3-half
+            h1= title 
+        .w3-half
+            a.w3-right.w3-btn.w3-round-large.w3-teal(href='/users/editarPerfil' style='margin-top: 15px;') Editar perfil
+
+    .w3-container
+        if user.nivel == 'admin'
+            p 
+                b Administrador
+        else if user.nivel == 'produtor'
+            p 
+                b Produtor
+            p Listagem dos recursos que ele submeteu por implementar...
+        else 
+            p 
+                b Consumidor 
+            p Listagem dos recursos que ele transferiu por implementar...

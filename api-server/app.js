@@ -36,8 +36,9 @@ app.use(function(req, res, next){
       }
       else{
         console.log('else next')
-        req.user = payload.username
-        req.nivel = payload.nivel
+        req.user = {}
+        req.user.username = payload.username
+        req.user.nivel = payload.nivel
         next()
       }
     })

@@ -25,7 +25,7 @@ block content
                                 a(href="http://localhost:3001/recursos?id=" + r._id)= r.titulo 
                             td= r.tipo
                             td
-                                a.w3-btn.w3-round-large.w3-red(href="#") Delete
+                                a.w3-btn.w3-round-large.w3-red(href="/recursos/eliminar/" + r._id) Delete
                             td
                                 a.w3-btn.w3-round-large.w3-teal(href="#") Edit
     else 

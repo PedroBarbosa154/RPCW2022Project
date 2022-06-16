@@ -9,27 +9,29 @@ var jwt = require('jsonwebtoken')
 
 /* Verificar se o token é válido */
 function verificaToken(req, res, next){
+  // console.log('Verificacao do token')
   var token = req.query.token || req.body.token;
   jwt.verify(token, 'ProjetoRPCW2022', function(e, payload){
-    if(e)
+    if(e){
       res.status(401).jsonp({error: 'Token inválido: ' + e})
+    }
     else{
-      if(payload.nivel === "admin")
-        req.user = {
-          username: payload.username,
-          nivel: payload.nivel,
-          isAdmin: 1
-        }
-      else
       req.user = {
         username: payload.username,
-        nivel: payload.nivel,
-        isAdmin: 0
+        nivel: payload.nivel
       }
       next()
     } 
   })
 }
+
+router.get('/users/meuPerfil', verificaToken, (req,res,next) => {
+  var username = req.user.username 
+  // console.log(req.user.username)
+  User.consultarUtilizador(username)
+    .then(dados => res.status(200).jsonp(dados))
+    .catch(error => res.status(513).jsonp(error))
+});
 
 /* GET user */
 router.get('/users/:username', verificaToken, function(req,res,next){
@@ -112,6 +114,7 @@ router.get('/utilizadores', function(req,res,next) {
 
 /* DELETE user */
 router.delete('/eliminar', verificaToken, function(req,res,next) {
+  console.log('entrei no delete da autenticacao')
   var q = url.parse(req.url,true).query
   var username = q.username 
   if (username != undefined){
@@ -132,10 +135,28 @@ router.delete('/eliminar', verificaToken, function(req,res,next) {
     .catch(error => res.status(508).jsonp({error: error}))
 })
 
+router.put('/users/editarPerfil/:username', verificaToken, function(req,res,next){
+  var username = req.params.username
+  // console.log(req.user)
+  if(req.user.username == username)
+  next();
+  else
+  res.status(401).jsonp({error: "Não tem permissões"})
+}, function (req,res){
+  var passwordEncriptada = createHash('sha256').update(req.body.password).digest('hex');
+  var novoUsername = req.body.username
+  // console.log(req.user.username)
+  // console.log(novoUsername)
+  // console.log(req.user.nivel)
+  // console.log(req.body.password)
+  User.alterarUser(req.user.username,novoUsername,req.user.nivel,passwordEncriptada)
+    .then(dados => res.status(200).jsonp({dados: dados}))
+    .catch(error => res.status(509).jsonp({error: error}))
+})
+
 /* PUT user */
 router.put('/users',verificaToken,function(req,res,next){
-  var q = url.parse(req.url,true).query
-  var username = q.username 
+  var username = req.body.username
   if (username != undefined){
     console.log(req.user)
     if (req.user.nivel == "admin")
@@ -144,11 +165,10 @@ router.put('/users',verificaToken,function(req,res,next){
       res.status(401).jsonp({error: "Não tem o nível de administrador"})
   }
   else{
-    return res.status(507).jsonp({error: 'Utilizador não existe!'})
+    return res.status(512).jsonp({error: 'Utilizador não existe!'})
   }
 }, function(req, res) {
-  var q = url.parse(req.url,true).query
-  var username = q.username 
+  var username = req.body.username
   var nivel = req.body.nivel
   if (nivel){
     User.alterarNivel(username,nivel)

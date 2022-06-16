@@ -1,24 +1,27 @@
 # Recursos
 
 1. Permitir alterar o título ou o tipo de conteúdo de um recurso (só pode alterar o admin ou um produtor se o recurso for dele)
-2. Permitir eliminar recursos (admin tem permissão ou um produtor se o recurso for dele)
-3. Permitir listar por tipo
+2. Permitir eliminar recursos (admin tem permissão ou um produtor se o recurso for dele) [DONE]
+3. Permitir listar por tipo [DONE]
     Alguns tipos exemplo:
         - enunciado 
         - tese de mestrado 
         - artigo 
         - relatório
         - ... 
-4. Permitir encontrar recursos através duma barra de pesquisa 
+4. Permitir encontrar recursos através duma barra de pesquisa [DONE] 
 5. Permitir transferir recursos (acho que toda a gente pode fazer isso)
+6. Permitir meter likes nos recursos (e apresentar a contagem)
+7. Permitir comentários nos recursos (e mostrar os comentários)
 
 # Utilizadores 
 
 1. Permitir listar todos os utilizadores, por consumidor e por produtor (só o admin) [DONE]
-2. Permitir alterar os níveis de permissão dos utilizadores (só o admin)
-3. Permitir eliminar utilizadores (só o admin)
-4. Permitir aceder ao próprio perfil (produtor e consumidor)
+2. Permitir alterar os níveis de permissão dos utilizadores (só o admin) [DONE]
+3. Permitir eliminar utilizadores (só o admin ou o próprio utilizador) [DONE]
+4. Permitir aceder ao próprio perfil (produtor e consumidor) [DONE]
 5. No perfil do produtor poderá haver referência aos recursos que ele submeteu
+6. Alterar a password ou username (o próprio utilizador) [DONE]
 
 # Notícias 
 
