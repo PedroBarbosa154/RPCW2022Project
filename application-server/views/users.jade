@@ -15,8 +15,6 @@ block content
                     table.w3-text-black.w3-table-all.w3-hoverable.w3-centered.w3-large(style='margin-bottom: 50px;')
                         tr
                             th Username
-                            th Editar
-                            th Remover
                         each c in consumidores
                             tr
                                 td= c.username
@@ -32,9 +30,7 @@ block content
                     h2 Produtores
                     table.w3-text-black.w3-table-all.w3-hoverable.w3-centered.w3-large(style='margin-bottom: 50px;')
                         tr
-                            th Username
-                            th Editar 
-                            th Remover 
+                            th Username 
                         each p in produtores
                             tr
                                 td= p.username

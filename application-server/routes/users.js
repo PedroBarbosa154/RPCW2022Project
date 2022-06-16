@@ -69,8 +69,15 @@ router.get('/editarPerfil', verificaToken, (req,res,next) => {
 router.get('/perfil', verificaToken, (req,res,next) => {
   axios.get('http://localhost:3002/auth/users/meuPerfil?token=' + req.cookies.token)
     .then(dados => {
-      // console.log(dados)
-      res.render('perfil', {title: 'Perfil - ' + dados.data.username,user: dados.data, logged: 'true', nivel: req.cookies.nivel})
+      axios.get('http://localhost:3003/api/recursos?submissor=' + dados.data.username + '&token=' + req.cookies.token)
+        .then(recursos => {
+          console.log(recursos.data)
+          res.render('perfil', {title: 'Perfil - ' + dados.data.username,user: dados.data, logged: 'true', nivel: req.cookies.nivel, recursos: recursos.data})
+        })
+        .catch(error => {
+          console.log('Erro ao listar os recursos de um user: ' + error)
+          res.render('error', {error: error})
+        })
     })
     .catch(error => {
       console.log('Erro ao consultar o meu perfil: ' + error)
@@ -81,10 +88,10 @@ router.get('/perfil', verificaToken, (req,res,next) => {
 router.get('/eliminar/:username', verificaToken, (req,res,next) => {
   var username = req.params.username
   if (username != undefined){
-    console.log(username)
+    // console.log(username)
     axios.delete('http://localhost:3002/auth/eliminar?username=' + username + '&token=' + req.cookies.token)
       .then(dados => {
-        console.log(dados)
+        // console.log(dados)
         console.log('Utilizador eliminado com sucesso')
         res.redirect('/users')
       })
@@ -99,10 +106,10 @@ router.get('/editar', verificaToken, (req,res,next) => {
   var q = url.parse(req.url,true).query
   if (q.user != undefined){
     var username = q.user
-    console.log(username)
+    // console.log(username)
     axios.get('http://localhost:3002/auth/users/' + username + '?token=' + req.cookies.token)
       .then(dados => {
-        console.log(dados)
+        // console.log(dados)
         var nivel = dados.data.nivel
         res.render('editar_user',{title: 'Edição do utilizador ' + username + ' - ' + nivel, user: dados.data})
       })
@@ -115,7 +122,7 @@ router.get('/editar', verificaToken, (req,res,next) => {
 
 router.post('/editar', verificaToken, (req,res,next) => {
   var userAtualizado = req.body 
-  console.log(userAtualizado)
+  // console.log(userAtualizado)
   axios.put('http://localhost:3002/auth/users?token=' + req.cookies.token, userAtualizado)
     .then(resposta => {
       console.log(resposta)
@@ -142,8 +149,8 @@ router.post('/registar',(req,res,next) => {
 router.post('/login',(req,res,next) => {
   axios.post("http://localhost:3002/auth/login", req.body)
       .then(data => {
-        console.log("Login bem sucedido");
-        console.log('Token: ' + data.data.token)
+        // console.log("Login bem sucedido");
+        // console.log('Token: ' + data.data.token)
         res.cookie('token', data.data.token, {
           expires: new Date(Date.now() + '1d'),
           secure: false, // set to true if your using https
@@ -151,7 +158,7 @@ router.post('/login',(req,res,next) => {
         });
         axios.get("http://localhost:3002/auth/users/" + req.body.username + "?token=" + data.data.token)
           .then(data => {
-            console.log('entrei aqui')
+            // console.log('entrei aqui')
             res.cookie('nivel',data.data.nivel, {
               expires: new Date(Date.now() + '1d'),
               secure: false, // set to true if your using https

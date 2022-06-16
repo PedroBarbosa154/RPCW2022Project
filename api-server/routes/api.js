@@ -7,7 +7,7 @@ var jwt = require('jsonwebtoken');
 //É melhor verificar o token em todas as rotas que precisam de login por causa dos acessos vindos do Postman
 function verificaToken(req, res, next){
   var myToken = req.query.token || req.body.token;
-  console.log(myToken)
+  // console.log(myToken)
   jwt.verify(myToken, 'ProjetoRPCW2022', function(e, payload){
     if(e) res.status(401).jsonp({error: 'Erro na verificação do token: ' + e})
     else {
@@ -51,6 +51,15 @@ router.get('/recursos', verificaToken, function(req, res, next) {
         res.status(200).jsonp(dados)
       })
       .catch(e => res.status(504).jsonp({error: e}))
+  } else if (q.submissor != undefined){
+    var submissor = q.submissor
+    console.log(submissor)
+    Recurso.listarPorSubmissor(submissor)
+      .then(dados => {
+        console.log(dados)
+        res.status(200).jsonp(dados)
+      })
+      .catch(error => res.status(510).jsonp(error))
   }
   else {
     Recurso.listar()
@@ -100,30 +109,42 @@ router.post('/recursos', verificaToken, function(req,res,next){verificaNivel(["a
 });
 
 /* PUT de um recurso. */
-router.put('/recursos/:rid', verificaToken, function(req,res,next){verificaNivel(["admin","produtor"],req,res,next)}, function(req, res) {
-  var rid = req.params.id
-  Recurso.listarPorRid(id)
+router.put('/recursos/:rid', verificaToken, function(req,res,next){verificaNivel(["admin","produtor"],req,res,next)}, function(req, res,next) {
+  var rid = req.params.rid
+  // console.log(rid)
+  Recurso.listarPorRid(rid)
     .then(dados => {
-      recurso = dados
-      console.log(recurso)
+      console.log(dados)
       console.log(req.user)
-      if(req.user.nivel == "admin" || recurso.idSubmissor == req.user.username) {
+      if(req.user.nivel == "admin" || dados.idSubmissor == req.user.username) {
         next()
       } else {
         res.status(401).jsonp({error: "Não tem permissões"})
       }
     })
     .catch(error => {
+      console.log(error)
       res.status(505).jsonp({error: error})
     })
 }, function(req, res) {
-  var rid = req.params.id
+  var rid = req.params.rid
   var titulo = req.body.titulo
   var tipo = req.body.tipo
+  // console.log(rid)
+  // console.log(titulo)
+  // console.log(tipo)
   if (titulo && tipo) {
     Recurso.atualizarTipoTitulo(rid,titulo,tipo)
-      .then(dados => res.status(204).jsonp({dados: dados}))
+      .then(dados => res.status(204).jsonp(dados))
       .catch(error => res.status(508).jsonp({error: error}))
+  } else if (titulo) {
+    Recurso.atualizarTitulo(rid,titulo)
+      .then(dados => res.status(204).jsonp(dados))
+      .catch(error => res.status(511).jsonp({error: error}))
+  } else if (tipo) {
+    Recurso.atualizarTipo(rid,tipo)
+      .then(dados => res.status(204).jsonp(dados))
+      .catch(error => res.status(512).jsonp({error: error}))
   } else {
     return res.status(509).jsonp({error: 'Falta indicar o título e/ou o tipo!'})
   }

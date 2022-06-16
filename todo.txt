@@ -1,6 +1,6 @@
 # Recursos
 
-1. Permitir alterar o título ou o tipo de conteúdo de um recurso (só pode alterar o admin ou um produtor se o recurso for dele)
+1. Permitir alterar o título ou o tipo de conteúdo de um recurso (só pode alterar o admin ou um produtor se o recurso for dele) [DONE]
 2. Permitir eliminar recursos (admin tem permissão ou um produtor se o recurso for dele) [DONE]
 3. Permitir listar por tipo [DONE]
     Alguns tipos exemplo:
@@ -20,7 +20,7 @@
 2. Permitir alterar os níveis de permissão dos utilizadores (só o admin) [DONE]
 3. Permitir eliminar utilizadores (só o admin ou o próprio utilizador) [DONE]
 4. Permitir aceder ao próprio perfil (produtor e consumidor) [DONE]
-5. No perfil do produtor poderá haver referência aos recursos que ele submeteu
+5. No perfil do produtor poderá haver referência aos recursos que ele submeteu [DONE]
 6. Alterar a password ou username (o próprio utilizador) [DONE]
 
 # Notícias 

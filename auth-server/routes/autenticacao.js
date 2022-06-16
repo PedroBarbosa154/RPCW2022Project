@@ -114,11 +114,11 @@ router.get('/utilizadores', function(req,res,next) {
 
 /* DELETE user */
 router.delete('/eliminar', verificaToken, function(req,res,next) {
-  console.log('entrei no delete da autenticacao')
+  // console.log('entrei no delete da autenticacao')
   var q = url.parse(req.url,true).query
   var username = q.username 
   if (username != undefined){
-    console.log(req.user)
+    // console.log(req.user)
     if (req.user.nivel == "admin" || req.user.username == username)
       next();
     else
@@ -158,7 +158,7 @@ router.put('/users/editarPerfil/:username', verificaToken, function(req,res,next
 router.put('/users',verificaToken,function(req,res,next){
   var username = req.body.username
   if (username != undefined){
-    console.log(req.user)
+    // console.log(req.user)
     if (req.user.nivel == "admin")
       next();
     else

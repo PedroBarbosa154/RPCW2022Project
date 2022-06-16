@@ -1,0 +1,27 @@
+extends layout 
+
+block content
+  .w3-container
+    h1= title 
+
+    .w3-container(style='margin-top: 50px;')
+        form.w3-container(action='/recursos/editar/' + recurso._id  method='POST')
+            .w3-row-padding
+                .w3-col.s6
+                    label(for='titulo')
+                        b Título
+                    input#titulo.w3-input.w3-border.w3-light-grey(type='text' value=recurso.titulo name='titulo')
+                    br
+                .w3-col.s6
+                    label(for='tipo')
+                        b Tipo
+                    select.w3-select(name='tipo')
+                        option(value='' disabled selected) Escolha o tipo
+                        option(value='tese') Tese
+                        option(value='enunciado') Enunciado 
+                        option(value='artigo') Artigo
+                        option(value='relatorio') Relatorio
+                        option(value='slides') Slides
+            .w3-container.w3-center
+                input.w3-btn.w3-green.w3-margin(type='submit' value='Confirmar edição')
+                input.w3-btn.w3-red.w3-margin(type='reset' value='Limpar valores')

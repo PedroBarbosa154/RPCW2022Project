@@ -7,3 +7,6 @@ block content
     ul.w3-ul 
         li Id do recurso: #{recurso._id} 
         li Produtor: #{recurso.idProdutor}
+        li Likes: #{recurso.likes}
+        li
+          a.w3-btn.w3-border.w3-green(href="/recursos/download/"+recurso._id) Download

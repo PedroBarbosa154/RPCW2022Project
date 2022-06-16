@@ -5,6 +5,7 @@ var mongoose = require('mongoose')
 module.exports.inserir = metadados =>{
     var novoRecurso = new Recurso(metadados)
     novoRecurso._id = new mongoose.Types.ObjectId()
+    novoRecurso.likes = 0
     return novoRecurso.save()
 }
 
@@ -52,6 +53,27 @@ module.exports.eliminarRecurso = rid => {
 //Alterar o título e o tipo de um Recurso 
 module.exports.atualizarTipoTitulo = (rid, titulo, tipo) => {
     return Recurso
-        .findOneAndUpdate({_id:rid},{$set: {titulo: titulo, tipo: tipo}})
+        .findOneAndUpdate({_id:rid},{titulo: titulo, tipo: tipo})
+        .exec()
+}
+
+//Obter todos os recursos de um submissor
+module.exports.listarPorSubmissor = (username) => {
+    return Recurso
+        .find({idSubmissor:username})
+        .exec()
+}
+
+//Alterar o título de um recurso
+module.exports.atualizarTitulo = (rid, titulo) => {
+    return Recurso
+        .findOneAndUpdate({_id:rid},{titulo: titulo})
+        .exec()
+}
+
+//Alterar o tipo de um Recurso 
+module.exports.atualizarTipo = (rid, tipo) => {
+    return Recurso
+        .findOneAndUpdate({_id:rid},{tipo: tipo})
         .exec()
 }

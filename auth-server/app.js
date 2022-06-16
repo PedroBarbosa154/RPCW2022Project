@@ -31,11 +31,11 @@ app.use(session({
 passport.use(new LocalStrategy(
   {usernameField: 'username'}, (username, password, done) => {
     password_encriptada = createHash('sha256').update(password).digest('hex');
-    console.log(password_encriptada)
+    // console.log(password_encriptada)
     User.consultarUtilizador(username)
       .then(dados => {
         const user = dados
-        console.log(dados)
+        // console.log(dados)
         if(!user) { return done(null, false, {message: 'Utilizador inexistente!\n'})}
         if(password_encriptada != user.password) { return done(null, false, {message: 'Credenciais inválidas!\n'})}
         return done(null, user)

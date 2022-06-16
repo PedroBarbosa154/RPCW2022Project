@@ -4,6 +4,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var jwt = require('jsonwebtoken');
+var cors = require('cors');
 
 //Ligação à base de dados
 var mongoose = require('mongoose')
@@ -24,6 +25,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+//app.use(cors());
 
 // Verifica se o pedido veio com o token de acesso
 app.use(function(req, res, next){
@@ -31,11 +33,11 @@ app.use(function(req, res, next){
   if(myToken){
     jwt.verify(myToken, "ProjetoRPCW2022", function(e, payload){
       if(e){
-        console.log('erro 401 verify')
+        // console.log('erro 401 verify')
         res.status(401).jsonp({error: e})
       }
       else{
-        console.log('else next')
+        // console.log('else next')
         req.user = {}
         req.user.username = payload.username
         req.user.nivel = payload.nivel
@@ -44,7 +46,7 @@ app.use(function(req, res, next){
     })
   }
   else{
-    console.log('401 else token nulo')
+    // console.log('401 else token nulo')
     res.status(401).jsonp({error: "Token inexistente!"})
   }
 })
