@@ -31,6 +31,13 @@ function verificaToken(req, res, next){
   })
 }
 
+/* GET user */
+router.get('/users/:username', verificaToken, function(req,res,next){
+  User.consultarUtilizador(req.params.username)
+    .then(dados => res.status(200).jsonp(dados))
+    .catch(error => res.status(511).jsonp(error))
+})
+
 /* GET lista de utilizadores. */
 router.get('/users', verificaToken, function(req, res, next) {
   if (req.user.nivel == "admin") next();
@@ -50,8 +57,8 @@ router.get('/users', verificaToken, function(req, res, next) {
 /* POST login */
 router.post('/login', function(req,res,next){
   passport.authenticate('local', function(err,user,info){
-    //console.log(err)
-    //console.log(user)
+    // console.log(err)
+    // console.log(user)
     if(err)
       return next(err);
     if(!user){
@@ -60,22 +67,25 @@ router.post('/login', function(req,res,next){
     jwt.sign({ username: user.username, nivel: user.nivel, 
       sub: 'ProjetoRPCW2022'}, 
       "ProjetoRPCW2022",
-      {expiresIn: '1h'},
+      {expiresIn: '1d'},
       function(e, token) {
-        if(e) res.status(503).jsonp({error: "Erro na geração do token: " + e}) 
-        else res.status(201).jsonp({token: token})
+        if(e) {
+          res.status(502).jsonp({error: "Erro na geração do token: " + e}) 
+        }
+        else {
+          res.status(201).jsonp({token: token})
+        }
     });
   })(req,res,next)
 });
 
 /* POST users */
 router.post('/registar', function(req,res) {
-  console.log(req.body)
   //Encriptação da password antes de inserir na BD
   req.body.password = createHash('sha256').update(req.body.password).digest('hex');
   User.registar(req.body)
     .then(dados => res.status(201).jsonp({dados: dados}))
-    .catch(e => res.status(501).jsonp({error: e}))
+    .catch(e => res.status(503).jsonp({error: e}))
 })
 
 /* GET users 

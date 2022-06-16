@@ -1,0 +1,44 @@
+extends layout 
+
+block content
+  include navbar.jade
+  .w3-container
+    h1.w3-center Utilizadores existentes no sistema 
+
+    .w3-row 
+        .w3-half.w3-container
+            if consumidores.length == 0
+                p Não há utilizadores com o nível de consumidor!
+            else 
+                .w3-container(style='margin-top: 35px;')
+                    h2 Consumidores
+                    table.w3-text-black.w3-table-all.w3-hoverable.w3-centered.w3-large(style='margin-bottom: 50px;')
+                        tr
+                            th Username
+                            th Editar
+                            th Remover
+                        each c in consumidores
+                            tr
+                                td= c.username
+                                td
+                                    a.w3-btn.w3-round-large.w3-teal(href='/') Editar
+                                td
+                                    a.w3-btn.w3-round-large.w3-red(href='/eliminar/' + c.username) Eliminar
+        .w3-half.w3-container
+            if produtores.length == 0
+                p Não há utilizadores com o nível de produtor!
+            else 
+                .w3-container(style='margin-top: 35px;')
+                    h2 Produtores
+                    table.w3-text-black.w3-table-all.w3-hoverable.w3-centered.w3-large(style='margin-bottom: 50px;')
+                        tr
+                            th Username
+                            th Editar 
+                            th Remover 
+                        each p in produtores
+                            tr
+                                td= p.username
+                                td
+                                    a.w3-btn.w3-round-large.w3-teal(href='/') Editar
+                                td
+                                    a.w3-btn.w3-round-large.w3-red(href='/eliminar/' + p.username) Eliminar

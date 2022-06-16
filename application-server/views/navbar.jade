@@ -6,6 +6,18 @@ html
     link(rel='stylesheet', href='/stylesheets/w3.css')
   body
     .topnav
-      a(href="/registar").w3-right Registo
-      a(href="/login").w3-right Login
-      a(href="/upload").w3-right Upload File
+      if logged == undefined
+        a(href="/registar").w3-right Registo
+        a(href="/login").w3-right Login
+      else
+        a(href="/users/logout").w3-right Logout
+      if nivel == 'consumidor'
+        a(href="/recursos").w3-right Recursos
+      else if nivel== 'produtor'
+        a(href="/upload").w3-right Upload File
+        a(href="/recursos").w3-right Recursos
+      else if nivel == 'admin'
+        a(href="/recursos/administrar").w3-right Recursos
+        a(href="/users").w3-right Utilizadores
+        // Noticias
+        // Logs

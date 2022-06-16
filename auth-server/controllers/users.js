@@ -18,7 +18,7 @@ module.exports.consultarUtilizadores = () => {
 //Consultar utilizadores por nível
 module.exports.consultarUtilizadoresNivel = nivel => {
     return User
-        .find({nivel:nivel})
+        .find({nivel:nivel},{_id:0,username:1})
         .sort({username:1})
         .exec()
 }
@@ -26,7 +26,7 @@ module.exports.consultarUtilizadoresNivel = nivel => {
 //Consultar um user
 module.exports.consultarUtilizador = username => {
     return User
-        .findOne({username: username})
+        .findOne({username: username},{_id:0})
         .exec()
 }
 

@@ -1,0 +1,11 @@
+extends layout 
+
+block content
+  .w3-container.w3-center
+      h1.w3-centered.w3-red WARNINGS
+      table.w3-table-all.w3-light-red
+        each warn in warnings
+          tr
+            td.w3-center= warn
+  .w3-container
+      a.w3-right(href="/") Página Inicial

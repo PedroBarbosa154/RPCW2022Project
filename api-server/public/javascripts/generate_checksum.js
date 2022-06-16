@@ -1,4 +1,4 @@
-const path = 'data/resource1/projeto-rpcw-enunciado.pdf';
+const path = 'metadata.json';
 const { createHash } = require('crypto');
 
 function hash(string){

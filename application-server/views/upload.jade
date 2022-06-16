@@ -1,10 +1,12 @@
 extends layout 
 
 block content
-    form.w3-container(action="/recursos/upload" method="post" enctype="multipart/form-data")
-      .w3-cell-row
-        label.w3-text-light-green
-          b Select File
-        input.w3-input.w3-border.w3-light-grey(type="file" name="myFile")
-      .w3-cell-row
-        button.w3-btn.w3-green(type="submit" value="Submit") Submit
+  form.w3-container(action="/recursos/upload" method="post" enctype="multipart/form-data")
+    .w3-cell-row
+      label.w3-text-light-green
+        b Select File
+      input.w3-input.w3-border.w3-light-grey(type="file" name="myFile")
+    .w3-cell-row
+      button.w3-btn.w3-green(type="submit" value="Submit") Submit
+  .w3-container
+    a.w3-right(href="/") Página Inicial

@@ -3,7 +3,11 @@ var router = express.Router();
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index');
+  if(req.cookies.token != undefined){
+    res.render('index',{logged:'true',nivel:req.cookies.nivel});
+  }
+  else
+    res.render('index')
 });
 
 router.get('/registar', (req,res) => {

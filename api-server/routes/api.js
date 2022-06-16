@@ -3,6 +3,13 @@ var router = express.Router();
 var Recurso = require('../controllers/recursos')
 var url = require('url')
 
+function verificaNivel(autorizados,req,res,next){
+  if(autorizados.includes(req.nivel))
+    next()
+  else
+    res.status(403).jsonp({error: "Não tem nível de acesso suficiente"})
+}
+
 /* GET recurso por rid. */
 router.get('/recursos/:rid', function(req, res, next) {
   var rid = req.params.rid
@@ -18,7 +25,7 @@ router.get('/recursos', function(req, res, next) {
     var tipo = q.tipo
     Recurso.listarPorTipo(tipo)
       .then(dados => {
-        console.log('Resposta: ' + dados)
+        // console.log('Resposta: ' + dados)
         res.status(200).jsonp(dados)
       })
       .catch(e => res.status(503).jsonp({error: e}))
@@ -26,7 +33,7 @@ router.get('/recursos', function(req, res, next) {
     var pal = q.q
     Recurso.listarComPalavra(pal)
       .then(dados => {
-        console.log('Resposta: ' + dados)
+        // console.log('Resposta: ' + dados)
         res.status(200).jsonp(dados)
       })
       .catch(e => res.status(504).jsonp({error: e}))
@@ -34,7 +41,7 @@ router.get('/recursos', function(req, res, next) {
   else {
     Recurso.listar()
       .then(dados =>{
-        console.log('Resposta: ' + dados)
+        // console.log('Resposta: ' + dados)
         res.status(200).jsonp(dados)
       })
       .catch(e => res.status(500).jsonp({error: e}))
@@ -42,14 +49,14 @@ router.get('/recursos', function(req, res, next) {
 });
 
 /* POST de um recurso. */
-router.post('/recursos', function(req, res, next) {
+router.post('/recursos', function(req,res,next){verificaNivel(["admin","produtor"],req,res,next)}, function(req, res) {
   Recurso.inserir(req.body)
     .then(dados => res.status(201).jsonp(dados))
     .catch(e => {console.log(e);res.status(501).jsonp({error: e})})
 });
 
 /* PUT de um recurso. */
-router.put('/recursos/:rid', function(req, res, next) {
+router.put('/recursos/:rid', function(req,res,next){verificaNivel(["admin","produtor"],req,res,next)}, function(req, res) {
   var rid = req.params.rid
   Recurso.atualizar(rid, req.body.tipo)
     .then(dados => res.status(201).jsonp(dados))

@@ -4,6 +4,9 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var mongoose =  require('mongoose');
+var session = require('express-session')
+var passport = require('passport')
+var LocalStrategy = require('passport-local').Strategy
 
 var mongoDB = 'mongodb://127.0.0.1/ProjetoRPCW2022'
 mongoose.connect(mongoDB, {useNewUrlParser: true, useUnifiedTopology: true})
@@ -13,11 +16,45 @@ db.once('open',function(){
   console.log("Conexão ao MongoDB realizada com sucesso...")
 })
 
+
+// Configuração da estratégia local
+passport.use(new LocalStrategy(
+  {usernameField: 'username'}, (username, password, done) => {
+    axios.get('http://localhost:3002/users/username/' + username)
+    .then(dados => {
+      const user = dados.data
+      if(!user) {  return done(null, false, {message: 'Utilizador inexistente!\n'})}
+      return done(null, user)
+    })
+    .catch(e => done(e))
+  })
+  )
+  
+// Indica-se ao passport como serializar o utilizador
+passport.serializeUser((user,done) => {
+  console.log('Serialização, uname: ' + user.username)
+  done(null, user.username)
+})
+  
+// Desserialização: a partir do id obtem-se a informação do utilizador
+passport.deserializeUser((uname, done) => {
+  console.log('Desserialização, username: ' + uname)
+  User.consultarUtilizador(uname)
+    .then(dados => done(null, dados))
+    .catch(erro => done(erro, false))
+})
+
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var recursosRouter = require('./routes/recursos');
 
 var app = express();
+
+app.use(session({
+  secret: 'ProjetoRPCW2022',
+  resave: true,
+  saveUninitialized: true
+}))
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -28,6 +65,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);

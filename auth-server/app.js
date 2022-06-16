@@ -19,12 +19,10 @@ db.once('open', function() {
   console.log("Conexão ao MongoDB realizada com sucesso...")
 });
 
-var authRouter = require('./routes/autenticacao');
-
 var app = express();
 
 app.use(session({
-  secret: 'Projeto2022',
+  secret: 'ProjetoRPCW2022',
   resave: true,
   saveUninitialized: true
 }))
@@ -33,9 +31,11 @@ app.use(session({
 passport.use(new LocalStrategy(
   {usernameField: 'username'}, (username, password, done) => {
     password_encriptada = createHash('sha256').update(password).digest('hex');
+    console.log(password_encriptada)
     User.consultarUtilizador(username)
       .then(dados => {
         const user = dados
+        console.log(dados)
         if(!user) { return done(null, false, {message: 'Utilizador inexistente!\n'})}
         if(password_encriptada != user.password) { return done(null, false, {message: 'Credenciais inválidas!\n'})}
         return done(null, user)
@@ -57,6 +57,8 @@ passport.deserializeUser((uname, done) => {
     .then(dados => done(null, dados))
     .catch(erro => done(erro, false))
 })
+
+var authRouter = require('./routes/autenticacao');
 
 app.use(logger('dev'));
 app.use(express.json());
