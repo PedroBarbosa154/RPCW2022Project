@@ -319,10 +319,20 @@ router.get('/eliminar/:id', (req,res,next) => {
         axios.delete("http://localhost:3003/api/recursos/" + id + "?token=" + req.cookies.token)
             .then(dados => {
                 console.log('Recurso eliminado com sucesso')
-                if (req.cookies.nivel == 'admin')
-                    res.redirect('/recursos/administrar')
-                else
-                    res.redirect('/users/perfil')
+                //Remover do fileStorage
+                //É preciso um get dos metadados deste recurso
+                axios.get('http://localhost:3003/api/recursos/' + id + '?token=' + req.cookies.token)
+                    .then(resposta => {
+                        var metadata = resposta.data
+                        console.log(resposta)
+                        //console.log(metadata)
+                        //var path = metadata.path 
+                        console.log(path)
+                        if (req.cookies.nivel == 'admin')
+                            res.redirect('/recursos/administrar')
+                        else
+                            res.redirect('/users/perfil')
+                        })
             })
             .catch(error => {
                 console.log('Erro ao eliminar o recurso ' + id + ': ' + error)
