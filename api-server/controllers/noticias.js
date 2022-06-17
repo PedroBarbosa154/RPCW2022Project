@@ -26,6 +26,7 @@ module.exports.atualizar = (id,visibilidade) => {
 module.exports.listar = () => {
     return Noticia
         .find()
+        .sort({data:'desc'})
         .exec()
 }
 

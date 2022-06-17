@@ -131,6 +131,7 @@ router.post("/upload", verificaToken, upload.single('myFile') , function(req,res
                     var username = decoded.payload.username
                     metadata.dataSubmissao = new Date().toISOString().substring(0,16).split('T').join(' ')
                     metadata.idSubmissor = username
+                    console.log('Sumissor: ' + username)
                     console.log("ZIP valido")
                     zip.close()
                     next()
@@ -390,6 +391,16 @@ router.get("/atualizarLikes/:rid",(req,res,next)=>{
                 axios.post("http://localhost:3004/logs",log)
                   .then(dados => console.log("Log adicionado"))
                   .catch(err => {console.log("Erro ao enviar log: " + err)})
+                var noticia = {
+                    nome: decoded.payload.username,
+                    acao: 'gostou de um recurso',
+                    data: new Date().toISOString().slice(0, 16).split('T').join(' '),
+                    idRecurso: req.params.rid,
+                    visivel: true
+                }
+                axios.post('http://localhost:3003/noticias?token=' + req.cookies.token, noticia)
+                    .then(() => console.log('Notícia nova adicionada (like de recurso)'))
+                    .catch(err => res.render('error', {error: err}))
                 res.redirect("/recursos?id="+req.params.rid)
             })
             .catch(err => {
@@ -440,6 +451,16 @@ router.get('/eliminar/:id', (req,res,next) => {
                         axios.post("http://localhost:3004/logs",log)
                           .then(dados => console.log("Log adicionado"))
                           .catch(err => {console.log("Erro ao enviar log: " + err)})
+                        var noticia = {
+                            nome: decoded.payload.username,
+                            acao: 'eliminou um recurso',
+                            data: new Date().toISOString().slice(0, 16).split('T').join(' '),
+                            idRecurso: req.params.id,
+                            visivel: true
+                        }
+                        axios.post('http://localhost:3003/noticias?token=' + req.cookies.token, noticia)
+                            .then(() => console.log('Notícia nova adicionada (remoção de recurso)'))
+                            .catch(err => res.render('error', {error: err}))
                         if (req.cookies.nivel == 'admin')
                             res.redirect('/recursos/administrar')
                         else
@@ -489,6 +510,17 @@ router.post('/editar/:rid', verificaToken, (req,res,next) => {
             axios.post("http://localhost:3004/logs",log)
               .then(dados => console.log("Log adicionado"))
               .catch(err => {console.log("Erro ao enviar log: " + err)})
+            //Adicionar uma nova notícia
+            var noticia = {
+                nome: decoded.payload.username,
+                acao: 'editou um recurso',
+                data: new Date().toISOString().slice(0, 16).split('T').join(' '),
+                idRecurso: req.params.rid,
+                visivel: true
+            }
+            axios.post('http://localhost:3003/noticias?token=' + req.cookies.token, noticia)
+                .then(() => console.log('Notícia nova adicionada (edição de recurso)'))
+                .catch(err => res.render('error', {error: err}))
             if (req.cookies.nivel == 'admin')
                 res.redirect('/recursos/administrar')
             else

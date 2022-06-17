@@ -30,10 +30,10 @@
 3. Alterar visibilidade (por parte do admin) [DONE]
 3. Adicionar notícia quando:
     - é feito um upload [DONE]
-    - alguém edita um recurso
-    - alguém mete um like
+    - alguém edita um recurso [DONE]
+    - alguém mete um like [DONE]
     - alguém comenta 
-    - alguém remove um recurso
+    - alguém remove um recurso [DONE]
 
 # Logs
 

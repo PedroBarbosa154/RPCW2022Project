@@ -94,10 +94,12 @@ router.post('/login', function(req,res,next){
 router.post('/registar', function(req,res) {
   //Encriptação da password antes de inserir na BD
   req.body.password = createHash('sha256').update(req.body.password).digest('hex');
+  if (req.body.nivel == undefined)
+    req.body.nivel = 'consumidor'
   User.registar(req.body)
     .then(dados =>{
       var log = {}
-      log.user = user.username;
+      log.user = req.body.username;
       log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
       log.movimento = "registou-se"
       axios.post("http://localhost:3004/logs",log)
