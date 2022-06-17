@@ -17,6 +17,7 @@ db.once('open',function(){
 })
 
 var apiRouter = require('./routes/api');
+var noticiasRouter = require('./routes/noticias');
 
 var app = express();
 
@@ -52,6 +53,7 @@ app.use(function(req, res, next){
 })
 
 app.use('/api', apiRouter);
+app.use('/noticias', noticiasRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

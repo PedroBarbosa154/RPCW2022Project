@@ -10,7 +10,7 @@ var upload = multer({dest: 'uploads'});
 const sZip = require('node-stream-zip');
 const { createHash } = require('crypto');
 var jwt = require('jsonwebtoken');
-const glob = require('glob')
+const AdmZip = require('adm-zip');
 
 //É melhor verificar o token em todas as rotas que precisam de login por causa dos acessos vindos do Postman
 function verificaToken(req, res, next){
@@ -174,20 +174,42 @@ router.post("/upload", verificaToken, upload.single('myFile') , function(req,res
     let tname2 = tname.substring(tname.length/2+1,tname.length)
     let npath = pdir + "/public/fileStorage/" + tname1 + "/" + tname2
     if(!fs.existsSync(npath)){
-        metadata.path = npath
+        metadata.path = "/public/fileStorage/" + tname1 + "/" + tname2
         axios.post("http://localhost:3003/api/recursos?token=" + req.cookies.token,metadata)
-            .then(() => {
+            .then(dados => {
+                var idRecurso = dados.data._id
                 fs.mkdir(npath, {recursive:true}, err => {
                     if(err) console.log("Erro a criar new path: " + err)
                     else
-                    {    
+                    {   
                         zip.extract(null,npath, err => {
                             console.log(err ? "Error extracting: " + err : "Extracted")
-                            zip.close()
+                            if (!err) {
+                                //Adicionar às notícias
+                                var decoded = jwt.decode(req.cookies.token,{complete:true})
+                                var username = decoded.payload.username 
+                                //console.log('metadados para fazer a noticia: ', metadata)
+                                var noticia = {
+                                    nome: username,
+                                    acao: 'submeteu um recurso',
+                                    data: new Date().toISOString().slice(0, 16).split('T').join(' '),
+                                    idRecurso: idRecurso,
+                                    visivel: true
+                                }
+                                axios.post('http://localhost:3003/noticias?token=' + req.cookies.token, noticia)
+                                    .then(resposta => {
+                                        // console.log(resposta)
+                                        zip.close()
+                                        res.redirect("/")
+                                    })
+                                    .catch(err => {
+                                        console.log("Erro ao enviar noticia para a BD: " + err)
+                                        res.render('error',{error:err})
+                                    })
+                            }
                         })
                     }
                 })
-                res.redirect("/")
             })
             .catch(err => {
                 if(err.response.status == 403){
@@ -316,26 +338,44 @@ router.get('/eliminar/:id', (req,res,next) => {
     var id = req.params.id
     if (id != undefined) {
         // console.log(id)
-        axios.delete("http://localhost:3003/api/recursos/" + id + "?token=" + req.cookies.token)
-            .then(dados => {
-                console.log('Recurso eliminado com sucesso')
-                //Remover do fileStorage
-                //É preciso um get dos metadados deste recurso
-                axios.get('http://localhost:3003/api/recursos/' + id + '?token=' + req.cookies.token)
+        //Remover do fileStorage
+        //É preciso um get dos metadados deste recurso
+        axios.get("http://localhost:3003/api/recursos/" + id + "?token=" + req.cookies.token)
+            .then(resposta => {
+                // console.log(resposta)
+                var metadata = resposta.data 
+                var caminho = metadata.path
+                var fullpath = path.normalize(__dirname+"/..") + caminho
+                // console.log(fullpath.split('/'))
+                var pasta_a_eliminar = ""
+                var caminho_split = fullpath.split("/")
+                for(i=0; i<caminho_split.length-1;i++)
+                    pasta_a_eliminar += caminho_split[i] + "/"
+                console.log(pasta_a_eliminar)
+                if(fs.existsSync(pasta_a_eliminar)){
+                    fs.rmdirSync(pasta_a_eliminar, {recursive:true});
+                    console.log("Pasta eliminada com sucesso");
+                }else{
+                    console.log("Pasta a eliminar não existente")
+                }
+                axios.delete('http://localhost:3003/api/recursos/' + id + '?token=' + req.cookies.token)
                     .then(resposta => {
-                        var metadata = resposta.data
-                        console.log(resposta)
+                        console.log('Recurso eliminado com sucesso')
                         //console.log(metadata)
                         //var path = metadata.path 
-                        console.log(path)
+                        // console.log(path)
                         if (req.cookies.nivel == 'admin')
                             res.redirect('/recursos/administrar')
                         else
                             res.redirect('/users/perfil')
-                        })
+                    })
+                    .catch(error => {
+                        console.log('Erro ao eliminar recurso: ' + error)
+                        res.render('error', {error: error})
+                    })
             })
             .catch(error => {
-                console.log('Erro ao eliminar o recurso ' + id + ': ' + error)
+                console.log('Erro ao fazer get do recurso ' + id + ': ' + error)
                 res.render('error', {error: error});
             })
     }
@@ -365,7 +405,10 @@ router.post('/editar/:rid', verificaToken, (req,res,next) => {
     axios.put('http://localhost:3003/api/recursos/' + req.params.rid + '?token=' + req.cookies.token, recursoAtualizado)
         .then(resposta => {
             // console.log(resposta)
-            res.redirect('/recursos/administrar')
+            if (req.cookies.nivel == 'admin')
+                res.redirect('/recursos/administrar')
+            else
+                res.redirect('/users/perfil')
         })
         .catch(error => {
             console.log('Erro ao editar: ' + error)
@@ -393,6 +436,7 @@ router.get("/download/:rid", (req,res,next) => {
     axios.get("http://localhost:3003/api/recursos/"+req.params.rid+"?token="+req.cookies.token)
         .then(data => {
             var recurso = data.data
+            // Metadados
             var metadata = {}
             metadata.dataCriacao = recurso.dataCriacao
             metadata.dataSubmissao = recurso.dataSubmissao
@@ -400,56 +444,125 @@ router.get("/download/:rid", (req,res,next) => {
             metadata.idProdutor = recurso.idProdutor
             metadata.idSubmissor = recurso.idSubmissor
             metadata.titulo = recurso.titulo
+            // RRD
+            var rrd = {}
+            rrd.version = "1.0"
+            rrd.encoding = "UTF-8"
+            rrd.algorithm = "sha256"
+            rrd.data = []
             
-            var caminho = recurso.path
             // Fazer pasta temporária de download, calcular o hash a partir daí
             var pdir = path.normalize(__dirname+"/..")
+            var caminho = pdir+recurso.path
             var tname = hash(metadata.titulo+metadata.dataCriacao)
             let tname1 = tname.substring(0,tname.length/2)
             let tname2 = tname.substring(tname.length/2+1,tname.length)
             var npath = pdir + "/public/fileStorage/" + tname1 + "/" + tname2
+            var temppath = pdir + "/public/temporario"
             // console.log("Caminho na BD: " + caminho)
             // console.log("Caminho calculado:" + npath)
             var files = []
             if(npath == caminho){
                 files = getFiles(caminho,files);
-                temppath = pdir + "/public/temporario"
                 files.forEach(f => {
                     let caminho_file = f.split(tname2)[1]
                     let caminho_pasta = ""
                     let caminhos_split = caminho_file.split('/')
                     for(i=1;i<caminhos_split.length-1;i++) caminho_pasta += "/" + caminhos_split[i]
-                    console.log("Caminho Pasta: " + caminho_pasta)
-                    console.log("Caminho Ficheiro: " + caminho_file)
+                    // console.log("Caminho Pasta: " + caminho_pasta)
+                    // console.log("Caminho Ficheiro: " + caminho_file)
                     let ficheiro = caminho_file.split('/')[caminho_file.split('/').length-1]
-                    console.log("Ficheiro: "+ficheiro)
+                    // console.log("Ficheiro: "+ficheiro)
+                    let checksum_info = {}
+                    let caminho_checksum = ""
+                    for(i=2;i<caminhos_split.length-1;i++){
+                        if (i==2) caminho_checksum += caminhos_split[i]
+                        else caminho_checksum += "/" + caminhos_split[i]
+                    }
+                    checksum_info.checksum = hash(caminho_checksum)
+                    checksum_info.path = caminho_checksum
+                    rrd.data.push(checksum_info)
+                    // console.log("Caminho checksum: " + caminho_checksum)
+                    
                     if(!fs.existsSync((final_path=path.join(temppath,caminho_pasta)))){
                         console.log("Path temporario ainda não existe: " + final_path)
                         // Cria a pasta temporária
-                        /* fs.mkdir(final_path, {recursive:true}, err=> {
+                        fs.mkdir(final_path, {recursive:true}, err=> {
                             // Ir buscar o ficheiro e mover para a pasta temporária
-                            fs.copyFile(npath+caminho_file,final_path, (err)=> {
-                                if (err) console.log("Erro ao copiar o ficheiro: " + err)
-                            })
-                        }) */
+                            if(err) console.log("Erro ao criar pasta: " + err)
+                            else{
+                                sleep(300)
+                                .then(() => {
+                                    fs.copyFile(npath+caminho_file,final_path+"/"+ficheiro, (err)=> {
+                                        if (err) console.log("Erro ao copiar o ficheiro: " + err)
+                                    })
+                                })
+                            }
+                        }) 
                     }else{
                         // Se já existir a pasta temporária basta adicionar o ficheiro
-                        // fs.copyFile(npath+caminho_file,final_path, (err)=> {
-                        //     if (err) console.log("Erro ao copiar o ficheiro: " + err)
-                        // })
+                        fs.copyFile(npath+caminho_file,final_path+"/"+ficheiro, (err)=> {
+                            if (err) console.log("Erro ao copiar o ficheiro: " + err)
+                        })
                         console.log("Path temporário já existe")
                     }
                 })
                 // No fim de ter a pasta temporária criada tenho de criar o ficheiro de metadados com a metadata
                 // e criar o manifesto RRD-SIP com os checksums calculados a partir da pasta data
-                /* 
-                let metadata_json_info = JSON.stringify(metdata)
+                let metadata_json_info = JSON.stringify(metadata)
                 //Para cada ficheiro dentro da pasta data, calcular o checksum e guardar no json RRD-SIP
-                
-                */
+                let manifest_json_info = JSON.stringify(rrd)
+                let caminho_completo = files[0].split(tname2)[1].split("data")[0]
+                // console.log(caminho_completo)
+                let json_split = caminho_completo.split('/')
+                // console.log(json_split)
+                let caminho_json = ""
+                for(i=1;i<json_split.length-1;i++) caminho_json += "/" + json_split[i] 
+                // console.log("Caminho para guardar o json: " + temppath+caminho_json)
                 // Depois tenho de fazer o zip disto tudo
+                caminho_json = temppath+caminho_json
+                console.log(caminho_json)
+                sleep(300)
+                    .then(() => {
+                        if(fs.existsSync(caminho_json)){
+                            fs.writeFileSync(caminho_json+"/RRD-SIP.json",manifest_json_info)
+                            fs.writeFileSync(caminho_json+"/metadata.json",metadata_json_info)
+                        }else{
+                            console.log("Caminho temporário para escrita dos ficheiros JSON ainda não existe")
+                        }
+                    })
+                sleep(300)
+                    .then(() => {
+                        try {
+                            const zipper = new AdmZip();
+                            var outputFile = caminho_json+".zip";
+                            zipper.addLocalFolder(caminho_json);
+                            zipper.writeZip(outputFile);
+                            console.log(`Created ${outputFile} successfully`);
+                          } catch (e) {
+                            console.log(`Something went wrong. ${e}`);
+                          }
 
-                // Fazer o download do zip e na callback eliminar a pasta temporaria
+                    })
+                // console.log("Cheguei aqui")
+                sleep(300)
+                    .then(() => {
+                        res.download(caminho_json+".zip", err=> {
+                            if (err){
+                                console.log("Erro ao descarregar ficheiro: " +  err)
+                                // res.redirect("/")
+                            }else{
+                                // console.log("Entrei aqui")
+                                if(fs.existsSync(temppath)){
+                                    fs.rmdirSync(temppath, {recursive:true});
+                                }else{
+                                    console.log("Pasta a eliminar não existente")
+                                }
+                                console.log("Download bem sucedido")
+                            }
+                        })
+                    })
+                // res.redirect("/")
             }
             else{
                 console.log("Pasta não existente")

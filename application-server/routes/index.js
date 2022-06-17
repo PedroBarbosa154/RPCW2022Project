@@ -1,15 +1,16 @@
 var express = require('express');
 var router = express.Router();
 var jwt = require('jsonwebtoken');
+var axios = require('axios');
 
 //É melhor verificar o token em todas as rotas que precisam de login por causa dos acessos vindos do Postman
 function verificaToken(req, res, next){
   var myToken = req.cookies.token;
-  console.log(myToken)
+  // console.log(myToken)
   jwt.verify(myToken, 'ProjetoRPCW2022', function(e, payload){
     if(e) res.status(401).jsonp({error: 'Erro na verificação do token: ' + e})
     else {
-      console.log("Token verificado e válido")
+      // console.log("Token verificado e válido")
       next()
     } 
   })
@@ -17,8 +18,18 @@ function verificaToken(req, res, next){
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
+  //Pedir à api os dados de todas as notícias visíveis
   if(req.cookies.token != undefined){
-    res.render('index',{logged:'true',nivel:req.cookies.nivel});
+    axios.get('http://localhost:3003/noticias?token=' + req.cookies.token)
+      .then(noticias => {
+        var noticias = noticias.data
+        // console.log(noticias)
+        res.render('index',{logged:'true',nivel:req.cookies.nivel, noticias: noticias});
+      })
+      .catch(error => {
+        console.log(error)
+        res.render('error', {error: error})
+      })
   }
   else
     res.render('index')

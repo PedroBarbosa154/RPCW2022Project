@@ -5,3 +5,35 @@ block content
   include navbar.jade
   //Main page
 
+  //Apresentar notícias
+  if logged == 'true' 
+    .w3-container(style='margin-top: 2%') 
+      ul.w3-ul(style='width: 100%').w3-border
+        li
+          h2.w3-center Notícias
+          if noticias.length > 0
+            if nivel == 'admin'
+              each n in noticias
+                li
+                  .w3-row-padding
+                    .w3-half
+                      b=n.nome  
+                      |  #{n.acao} a #{n.data}
+                    if n.visivel
+                      .w3-half
+                        a.w3-btn.w3-right.w3-round-large.w3-red(href="/eliminarNoticia/" + n._id) Eliminar
+                        a.w3-btn.w3-right.w3-round-large.w3-teal(href="/editarNoticia/invisivel") Tornar invisível
+                    else
+                      .w3-half
+                        a.w3-btn.w3-right.w3-round-large.w3-red(href="/eliminarNoticia/" + n._id) Eliminar
+                        a.w3-btn.w3-right.w3-round-large.w3-teal(href="/editarNoticia/visivel") Tornar visível
+
+            else 
+              each n in noticias
+                if n.visivel
+                  li 
+                    b=n.nome  
+                    |  #{n.acao} a #{n.data}
+          else
+            li Não há notícias...
+

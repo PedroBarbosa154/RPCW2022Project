@@ -104,7 +104,10 @@ router.delete('/recursos/:id', verificaToken, function(req,res,next) {
 /* POST de um recurso. */
 router.post('/recursos', verificaToken, function(req,res,next){verificaNivel(["admin","produtor"],req,res,next)}, function(req, res) {
   Recurso.inserir(req.body)
-    .then(dados => res.status(201).jsonp(dados))
+    .then(dados => {
+      // console.log(dados)
+      res.status(201).jsonp(dados)
+    })
     .catch(e => {console.log(e);res.status(501).jsonp({error: e})})
 });
 

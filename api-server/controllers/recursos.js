@@ -13,6 +13,7 @@ module.exports.inserir = metadados =>{
 module.exports.atualizar = (rid, tipo) => {
     return Recurso
         .findOneAndUpdate({_id:mongoose.Types.ObjectId(rid)},{tipo: tipo},{new:true})
+        .exec()
 }
 
 //Listar os recursos
