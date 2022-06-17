@@ -47,6 +47,8 @@ passport.deserializeUser((uname, done) => {
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var recursosRouter = require('./routes/recursos');
+var noticiasRouter = require('./routes/noticias');
+var logsRouter = require('./routes/logs');
 
 var app = express();
 
@@ -72,6 +74,8 @@ app.use(passport.session());
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/recursos',recursosRouter);
+app.use('/noticias',noticiasRouter);
+app.use('/logs',logsRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

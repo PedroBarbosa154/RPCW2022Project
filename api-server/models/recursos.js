@@ -9,7 +9,8 @@ var recursoSchema = new mongoose.Schema({
     titulo: String,
     tipo: String,
     path: String,
-    likes: Number
+    likes: Number,
+    users_liked : [String]
 })
 
 module.exports = mongoose.model('recursos', recursoSchema)

@@ -24,6 +24,25 @@ function verificaNivel(autorizados,req,res,next){
     res.status(403).jsonp({error: "Não tem nível de acesso suficiente"})
 }
 
+/* PUT atualizar user */
+router.put('/recursos/atualizarUser', verificaToken, (req,res,next) => {
+  console.log('PUT ATUALIZAR USER')
+  var userAntigo = req.body.userAntigo;
+  var userNovo = req.body.userNovo;
+  console.log('antigo: ' + userAntigo)
+  console.log('novo: ' + userNovo)
+  Recurso.atualizarSubmissor(userAntigo, userNovo)
+    .then(() => {
+      console.log('Sucesso ao atualizar bd')
+      console.log('antigo: ' + userAntigo)
+      console.log('novo: ' + userNovo)
+      Recurso.atualizarListaLikes(userAntigo,userNovo)
+        .then(dados => res.status(200).jsonp(dados))
+        .catch(e => res.status(515).jsonp({error: e}))
+    })
+    .catch(e => res.status(514).jsonp({error: e}))
+});
+
 /* GET recurso por rid. */
 router.get('/recursos/:rid', verificaToken, function(req, res, next) {
   var rid = req.params.rid
@@ -110,6 +129,22 @@ router.post('/recursos', verificaToken, function(req,res,next){verificaNivel(["a
     })
     .catch(e => {console.log(e);res.status(501).jsonp({error: e})})
 });
+
+router.put('/recursos/:rid/atualizarLikes',verificaToken,(req,res,next)=>{
+  var q = url.parse(req.url,true).query
+  if(q.tipo!=undefined && req.user.username!=undefined){
+    Recurso.atualizarLikes(req.params.rid,q.tipo,req.user.username)
+      .then(dados => {
+        res.status(200).jsonp(dados);
+      })
+      .catch(err => {
+        res.status(513).jsonp({error: err})
+      })
+  }
+  else{
+    console.log("Parâmetros em falta")
+  }
+})
 
 /* PUT de um recurso. */
 router.put('/recursos/:rid', verificaToken, function(req,res,next){verificaNivel(["admin","produtor"],req,res,next)}, function(req, res,next) {

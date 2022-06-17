@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "nodemon --ignore public/fileStorage/ ./bin/www"
+    "start": "nodemon --ignore public/fileStorage/  ./bin/www"
   },
   "dependencies": {
     "adm-zip": "^0.5.9",

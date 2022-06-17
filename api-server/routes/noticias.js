@@ -24,6 +24,17 @@ function verificaNivel(autorizados,req,res,next){
     res.status(401).jsonp({error: "Não tem nível de acesso suficiente"})
 }
 
+/* PUT noticia (alterar o nome do user) */
+router.put('/atualizarUser', verificaToken, (req,res,next) => {
+  var userAntigo = req.body.userAntigo;
+  var userNovo = req.body.userNovo;
+  Noticia.atualizarNome(userAntigo, userNovo)
+    .then(dados => {
+      res.status(200).jsonp(dados)
+    })
+    .catch(e => res.status(514).jsonp({error: e}))
+})
+
 /* PUT noticia. */
 router.put('/:id', verificaToken, function(req,res,next){verificaNivel(["admin","produtor"],req,res,next)}, function(req,res,next){
     var id = req.params.id
@@ -39,10 +50,8 @@ router.put('/:id', verificaToken, function(req,res,next){verificaNivel(["admin",
 }, function(req, res) {
   var id = req.params.id
   var visivel = req.body.visivel
-  // console.log(rid)
-  // console.log(titulo)
-  // console.log(tipo)
-  if (visivel) {
+  console.log(visivel)
+  if (visivel != undefined) {
     Noticia.atualizar(id,visivel)
       .then(dados => res.status(204).jsonp(dados))
       .catch(error => res.status(504).jsonp({error: error}))

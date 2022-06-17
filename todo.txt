@@ -11,7 +11,7 @@
         - ... 
 4. Permitir encontrar recursos através duma barra de pesquisa [DONE] 
 5. Permitir transferir recursos (acho que toda a gente pode fazer isso) [DONE]
-6. Permitir meter likes nos recursos (e apresentar a contagem)
+6. Permitir meter likes nos recursos (e apresentar a contagem) [DONE]
 7. Permitir comentários nos recursos (e mostrar os comentários)
 
 # Utilizadores 
@@ -26,12 +26,17 @@
 # Notícias 
 
 1. Listar notícias [DONE]
-2. Eliminar notícias 
+2. Eliminar notícias [DONE]
+3. Alterar visibilidade (por parte do admin) [DONE]
 3. Adicionar notícia quando:
     - é feito um upload [DONE]
+    - alguém edita um recurso
     - alguém mete um like
     - alguém comenta 
-    - alguém transfere um recurso 
-    - alguém vê um recurso 
     - alguém remove um recurso
 
+# Logs
+
+1. Listar logs [DONE]
+2. Eliminar logs [DONE]
+3. Adicionar log sempre que for feita uma ação fulcral [DONE]

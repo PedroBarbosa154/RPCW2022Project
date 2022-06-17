@@ -15,6 +15,7 @@ html
           form.form-inline.w3-left.w3-container(action="/recursos/search")
             input.w3-left.form-inline-input(type="text" placeholder="Search" name="search")
             button.w3-border.w3-white.w3-right.form-inline-button(type="submit" value="Search" style="font-size: 12px;") Search
+        a(href="/").w3-left Homepage
         a(href="/users/logout").w3-right Logout
         a(href="/users/perfil").w3-right Perfil
         .dropdown.w3-right
@@ -38,6 +39,8 @@ html
           a(href="/upload").w3-right Upload File
           a(href="/recursos").w3-right Recursos
         else if nivel == 'admin'
+          a(href="/logs").w3-right Logs
+          a(href="/upload").w3-right Upload File
           a(href="/recursos/administrar").w3-right Recursos
           a(href="/users").w3-right Utilizadores
         // Noticias

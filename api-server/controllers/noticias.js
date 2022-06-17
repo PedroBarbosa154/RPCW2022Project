@@ -1,6 +1,13 @@
 var Noticia = require('../models/noticias')
 var mongoose = require('mongoose')
 
+//Atualizar o nome de um user
+module.exports.atualizarNome = (userAntigo,userNovo) =>{
+    return Noticia
+        .updateMany({nome:userAntigo},{nome:userNovo},{new:true})
+        .exec()
+}
+
 //Inserir Notícia
 module.exports.inserir = noticia =>{
     var novaNoticia = new Noticia(noticia)

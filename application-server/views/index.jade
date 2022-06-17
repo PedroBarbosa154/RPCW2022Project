@@ -21,12 +21,18 @@ block content
                       |  #{n.acao} a #{n.data}
                     if n.visivel
                       .w3-half
-                        a.w3-btn.w3-right.w3-round-large.w3-red(href="/eliminarNoticia/" + n._id) Eliminar
-                        a.w3-btn.w3-right.w3-round-large.w3-teal(href="/editarNoticia/invisivel") Tornar invisível
+                        .w3-row-padding
+                          .w3-half
+                            a.w3-btn.w3-right.w3-round-large.w3-teal(href="/noticias/editar/" + n._id + "?visibilidade=invisivel") Tornar invisível
+                          .w3-half
+                            a.w3-btn.w3-right.w3-round-large.w3-red(href="/noticias/eliminar/" + n._id) Eliminar
                     else
                       .w3-half
-                        a.w3-btn.w3-right.w3-round-large.w3-red(href="/eliminarNoticia/" + n._id) Eliminar
-                        a.w3-btn.w3-right.w3-round-large.w3-teal(href="/editarNoticia/visivel") Tornar visível
+                        .w3-row-padding
+                          .w3-half
+                            a.w3-btn.w3-right.w3-round-large.w3-teal(href="/noticias/editar/" + n._id + "?visibilidade=visivel") Tornar visível
+                          .w3-half
+                            a.w3-btn.w3-right.w3-round-large.w3-red(href="/noticias/eliminar/" + n._id) Eliminar
 
             else 
               each n in noticias

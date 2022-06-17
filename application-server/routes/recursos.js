@@ -77,12 +77,19 @@ router.post("/upload", verificaToken, upload.single('myFile') , function(req,res
 
                     manifInfo.data.forEach(f => {
                         extension = f.path.split('.')[1]
-                        if(extension == 'pdf' || extension == 'xml')
-                            if((index=existe(f.path,fileList))==-1){
-                                manifesto = 0
-                                manifValido = 0
-                                console.log("Ficheiro " + f.path + " não existe!")
-                            }
+                        hashed_path = hash(f.path)
+                        if(hashed_path == f.checksum)
+                            if(extension == 'pdf' || extension == 'xml')
+                                if((index=existe(f.path,fileList))==-1){
+                                    manifesto = 0
+                                    manifValido = 0
+                                    console.log("Ficheiro " + f.path + " não existe!")
+                                    warnings.push("Ficheiro " + f.path + " não existe!")
+                                }
+                            else
+                                warnings.push("Só são aceites ficheiros em PDF ou XML!")
+                        else
+                            warnings.push("O checksum apresentado não corresponde valor certo de acordo com o path!")
                     })
                     if(manifesto == 1)
                         console.log("Manifesto valido")
@@ -105,7 +112,10 @@ router.post("/upload", verificaToken, upload.single('myFile') , function(req,res
                         metadata.dataCriacao = infoInfo.dataCriacao
                         metadata.idProdutor = infoInfo.idProdutor
                         metadata.titulo = infoInfo.titulo
-                        metadata.tipo = infoInfo.tipo
+                        var tipos =['tese','enunciado','artigo','slides','relatorio'] 
+                        if (!(tipos.includes(infoInfo.tipo))) warnings.push("Tipo de recurso não aceite!")
+                        else
+                            metadata.tipo = infoInfo.tipo
                         console.log("Metadados válidos")
                     }
                 }
@@ -199,6 +209,13 @@ router.post("/upload", verificaToken, upload.single('myFile') , function(req,res
                                 axios.post('http://localhost:3003/noticias?token=' + req.cookies.token, noticia)
                                     .then(resposta => {
                                         // console.log(resposta)
+                                        var log = {}
+                                        log.user = username;
+                                        log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
+                                        log.movimento = "efetuou o upload de " + metadata.titulo
+                                        axios.post("http://localhost:3004/logs",log)
+                                          .then(dados => console.log("Log adicionado"))
+                                          .catch(err => {console.log("Erro ao enviar log: " + err)})
                                         zip.close()
                                         res.redirect("/")
                                     })
@@ -253,7 +270,15 @@ router.get('/', verificaToken, (req,res) => {
             .then(response => {
                 recurso = response.data
                 // console.log(recurso)
-                res.render('recurso',{title: recurso.titulo, recurso: recurso, logged:'true', nivel:req.cookies.nivel});
+                var decoded = jwt.decode(req.cookies.token,{complete:true})
+                var log = {}
+                log.user = decoded.payload.username;
+                log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
+                log.movimento = "acedeu a página do recurso " + recurso.titulo
+                axios.post("http://localhost:3004/logs",log)
+                    .then(dados => console.log("Log adicionado"))
+                    .catch(err => {console.log("Erro ao enviar log: " + err)})
+                res.render('recurso',{title: recurso.titulo,user:decoded.payload.username ,recurso: recurso, logged:'true', nivel:req.cookies.nivel});
             })
             .catch(error => {
                 res.render('error', {error: error});
@@ -305,6 +330,14 @@ router.get('/search', (req,res,next)=> {
     if (q.search!=''){
         axios.get("http://localhost:3003/api/recursos?search=" + q.search + "&token=" + req.cookies.token)
             .then(data => {
+                var decoded = jwt.decode(req.cookies.token,{complete:true})
+                var log = {}
+                log.user = decoded.payload.username;
+                log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
+                log.movimento = "pesquisou por " + "'" + q.search + "'"
+                axios.post("http://localhost:3004/logs",log)
+                  .then(dados => console.log("Log adicionado"))
+                  .catch(err => {console.log("Erro ao enviar log: " + err)})
                 res.render('recursos',{recursos:data.data,logged:'true',nivel:req.cookies.nivel})
             })
             .catch(erro => {
@@ -322,6 +355,14 @@ router.get("/tipo", (req,res,next) =>{
     if(q.tipo!=''){
         axios.get("http://localhost:3003/api/recursos?tipo="+q.tipo+"&token="+req.cookies.token)
             .then(data => {
+                var decoded = jwt.decode(req.cookies.token,{complete:true})
+                var log = {}
+                log.user = decoded.payload.username;
+                log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
+                log.movimento = "pesquisou pelo tipo " + q.tipo
+                axios.post("http://localhost:3004/logs",log)
+                  .then(dados => console.log("Log adicionado"))
+                  .catch(err => {console.log("Erro ao enviar log: " + err)})
                 res.render('recursos',{recursos:data.data,logged:'true',nivel:req.cookies.nivel})
             })
             .catch(erro => {
@@ -333,6 +374,33 @@ router.get("/tipo", (req,res,next) =>{
         res.redirect('/')
     }
 });
+
+router.get("/atualizarLikes/:rid",(req,res,next)=>{
+    var q = url.parse(req.url,true).query
+    if(q.tipo!=undefined){
+        // console.log(q.tipo)
+        axios.put("http://localhost:3003/api/recursos/" + req.params.rid + "/atualizarLikes?tipo="+q.tipo+"&token="+req.cookies.token)
+            .then(dados=>{
+                // console.log("Likes atualizado")
+                var log = {}
+                var decoded = jwt.decode(req.cookies.token,{complete:true})
+                log.user = decoded.payload.username;
+                log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
+                log.movimento = (q.tipo=='inc' ? "deu like" : "deu dislike") + " no recurso " + dados.data.titulo
+                axios.post("http://localhost:3004/logs",log)
+                  .then(dados => console.log("Log adicionado"))
+                  .catch(err => {console.log("Erro ao enviar log: " + err)})
+                res.redirect("/recursos?id="+req.params.rid)
+            })
+            .catch(err => {
+                console.log("Erro ao atualizar likes: " + err);
+                res.render('error',{error:err});
+            })
+    }else{
+        console.log("Erro ao atualizar Likes")
+        res.redirect(res.get('referer'))
+    }
+})
 
 router.get('/eliminar/:id', (req,res,next) => {
     var id = req.params.id
@@ -354,16 +422,24 @@ router.get('/eliminar/:id', (req,res,next) => {
                 console.log(pasta_a_eliminar)
                 if(fs.existsSync(pasta_a_eliminar)){
                     fs.rmdirSync(pasta_a_eliminar, {recursive:true});
-                    console.log("Pasta eliminada com sucesso");
+                    // console.log("Pasta eliminada com sucesso");
                 }else{
                     console.log("Pasta a eliminar não existente")
                 }
                 axios.delete('http://localhost:3003/api/recursos/' + id + '?token=' + req.cookies.token)
                     .then(resposta => {
-                        console.log('Recurso eliminado com sucesso')
+                        // console.log('Recurso eliminado com sucesso')
                         //console.log(metadata)
                         //var path = metadata.path 
                         // console.log(path)
+                        var decoded = jwt.decode(req.cookies.token,{complete:true})
+                        var log = {}
+                        log.user = decoded.payload.username;
+                        log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
+                        log.movimento = "removeu o recurso " + resposta.data.titulo
+                        axios.post("http://localhost:3004/logs",log)
+                          .then(dados => console.log("Log adicionado"))
+                          .catch(err => {console.log("Erro ao enviar log: " + err)})
                         if (req.cookies.nivel == 'admin')
                             res.redirect('/recursos/administrar')
                         else
@@ -405,6 +481,14 @@ router.post('/editar/:rid', verificaToken, (req,res,next) => {
     axios.put('http://localhost:3003/api/recursos/' + req.params.rid + '?token=' + req.cookies.token, recursoAtualizado)
         .then(resposta => {
             // console.log(resposta)
+            var decoded = jwt.decode(req.cookies.token,{complete:true})
+            var log = {}
+            log.user = decoded.payload.username;
+            log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
+            log.movimento = "editou o recurso " + recursoAtualizado.titulo
+            axios.post("http://localhost:3004/logs",log)
+              .then(dados => console.log("Log adicionado"))
+              .catch(err => {console.log("Erro ao enviar log: " + err)})
             if (req.cookies.nivel == 'admin')
                 res.redirect('/recursos/administrar')
             else
@@ -458,7 +542,7 @@ router.get("/download/:rid", (req,res,next) => {
             let tname1 = tname.substring(0,tname.length/2)
             let tname2 = tname.substring(tname.length/2+1,tname.length)
             var npath = pdir + "/public/fileStorage/" + tname1 + "/" + tname2
-            var temppath = pdir + "/public/temporario"
+            var temppath = pdir + "/public/fileStorage/temporario"
             // console.log("Caminho na BD: " + caminho)
             // console.log("Caminho calculado:" + npath)
             var files = []
@@ -509,9 +593,9 @@ router.get("/download/:rid", (req,res,next) => {
                 })
                 // No fim de ter a pasta temporária criada tenho de criar o ficheiro de metadados com a metadata
                 // e criar o manifesto RRD-SIP com os checksums calculados a partir da pasta data
-                let metadata_json_info = JSON.stringify(metadata)
+                let metadata_json_info = JSON.stringify(metadata,null,4)
                 //Para cada ficheiro dentro da pasta data, calcular o checksum e guardar no json RRD-SIP
-                let manifest_json_info = JSON.stringify(rrd)
+                let manifest_json_info = JSON.stringify(rrd,null,4)
                 let caminho_completo = files[0].split(tname2)[1].split("data")[0]
                 // console.log(caminho_completo)
                 let json_split = caminho_completo.split('/')
@@ -545,20 +629,28 @@ router.get("/download/:rid", (req,res,next) => {
 
                     })
                 // console.log("Cheguei aqui")
-                sleep(300)
+                sleep(500)
                     .then(() => {
                         res.download(caminho_json+".zip", err=> {
                             if (err){
                                 console.log("Erro ao descarregar ficheiro: " +  err)
                                 // res.redirect("/")
                             }else{
-                                // console.log("Entrei aqui")
                                 if(fs.existsSync(temppath)){
-                                    fs.rmdirSync(temppath, {recursive:true});
+                                    fs.rmSync(temppath, {recursive:true});
                                 }else{
                                     console.log("Pasta a eliminar não existente")
                                 }
                                 console.log("Download bem sucedido")
+                                var decoded = jwt.decode(req.cookies.token,{complete:true})
+                                var log = {}
+                                log.user = decoded.payload.username;
+                                log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
+                                log.movimento = "descarregou o recurso " + files[0].split(tname2)[1].split('/')[files[0].split(tname2)[1].split('/').length-1]
+                                axios.post("http://localhost:3004/logs",log)
+                                  .then(dados => console.log("Log adicionado"))
+                                  .catch(err => {console.log("Erro ao enviar log: " + err)})
+                                // console.log("Entrei aqui")
                             }
                         })
                     })

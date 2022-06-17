@@ -6,6 +6,7 @@ module.exports.inserir = metadados =>{
     var novoRecurso = new Recurso(metadados)
     novoRecurso._id = new mongoose.Types.ObjectId()
     novoRecurso.likes = 0
+    novoRecurso.users_liked = []
     return novoRecurso.save()
 }
 
@@ -77,4 +78,31 @@ module.exports.atualizarTipo = (rid, tipo) => {
     return Recurso
         .findOneAndUpdate({_id:rid},{tipo: tipo})
         .exec()
+}
+
+//Atualizar a contagem de likes
+module.exports.atualizarLikes = (rid,tipo,user)=>{
+    if(tipo=='inc'){
+        return Recurso
+            .findOneAndUpdate({_id:rid},{$push: {users_liked:user},$inc:{likes:1}})
+            .exec()
+    }else{
+        return Recurso
+            .findOneAndUpdate({_id:rid},{$pull: {users_liked:user},$inc:{likes:-1}})
+            .exec()
+    }
+}
+
+//Atualizar um username associado ao recurso como submissor
+module.exports.atualizarSubmissor = (userAntigo,userNovo)=>{
+    return Recurso
+            .updateMany({idSubmissor:userAntigo},{idSubmissor:userNovo},{new:true})
+            .exec()
+}
+
+//Atualizar um username associado ao recurso como participante da lista dos likes
+module.exports.atualizarListaLikes = (userAntigo,userNovo)=>{
+    return Recurso
+            .updateMany({users_liked:userAntigo},{$set: {'users_liked.$': userNovo}})
+            .exec()
 }

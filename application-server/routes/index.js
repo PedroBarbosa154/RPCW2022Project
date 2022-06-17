@@ -41,7 +41,7 @@ router.get('/registar', (req,res) => {
 
 router.get('/upload', verificaToken, (req,res) => {
   if (['admin','produtor'].includes(req.cookies.nivel))
-    res.render('upload');
+    res.render('upload',{logged:'true',nivel:req.cookies.nivel});
   else
     res.render('error', {error: {status: 401}, message: 'Não tem permissões para submeter conteúdo...'})
 })

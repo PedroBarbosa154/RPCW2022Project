@@ -40,7 +40,12 @@ router.post('/perfil', verificaToken, (req,res,next) => {
       var username = dados.data.username
       axios.put('http://localhost:3002/auth/users/editarPerfil/' + username + '?token=' + req.cookies.token, edicao)
         .then(dados => {
-          // console.log(dados)
+          res.clearCookie('token');
+          res.cookie('token', dados.data.token, {
+            expires: new Date(Date.now() + '1d'),
+            secure: false, // set to true if your using https
+            httpOnly: true
+          });
           res.redirect('/users/perfil')
         })
         .catch(error => {
@@ -57,7 +62,7 @@ router.post('/perfil', verificaToken, (req,res,next) => {
 router.get('/editarPerfil', verificaToken, (req,res,next) => {
   axios.get('http://localhost:3002/auth/users/meuPerfil?token=' + req.cookies.token)
     .then(dados => {
-      // console.log(dados)
+      console.log(dados)
       res.render('editar_perfil', {title: 'Editar perfil - ' + dados.data.username, user: dados.data, logged: 'true', nivel: req.cookies.nivel})
     })
     .catch(error => {
@@ -179,6 +184,14 @@ router.post('/login',(req,res,next) => {
 })
 
 router.get('/logout', verificaToken, (req,res,next)=> {
+  var decoded = jwt.decode(req.cookies.token,{complete:true})
+  var log = {}
+  log.user = decoded.payload.username;
+  log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
+  log.movimento = "efetuou logout"
+  axios.post("http://localhost:3004/logs",log)
+    .then(dados => console.log("Log adicionado"))
+    .catch(err => {console.log("Erro ao enviar log: " + err)})
   res.cookie('token',undefined);
   res.cookie('nivel',undefined);
   res.clearCookie('token');
