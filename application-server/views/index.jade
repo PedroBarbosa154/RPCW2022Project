@@ -14,7 +14,7 @@ block content
           if noticias.length > 0
             if nivel == 'admin'
               each n in noticias
-                li
+                li.w3-center
                   .w3-row-padding
                     .w3-half
                       b=n.nome  
@@ -23,23 +23,27 @@ block content
                       .w3-half
                         .w3-row-padding
                           .w3-half
-                            a.w3-btn.w3-right.w3-round-large.w3-teal(href="/noticias/editar/" + n._id + "?visibilidade=invisivel") Tornar invisível
+                            a.w3-btn.w3-right.w3-round-large.w3-teal(href="/noticias/editar/" + n._id + "?visibilidade=invisivel" class="fas fa-low-vision")
                           .w3-half
-                            a.w3-btn.w3-right.w3-round-large.w3-red(href="/noticias/eliminar/" + n._id) Eliminar
+                            a.w3-btn.w3-right.w3-round-large.w3-red(href="/noticias/eliminar/" + n._id class="fas fa-trash") 
                     else
                       .w3-half
                         .w3-row-padding
                           .w3-half
-                            a.w3-btn.w3-right.w3-round-large.w3-teal(href="/noticias/editar/" + n._id + "?visibilidade=visivel") Tornar visível
+                            a.w3-btn.w3-right.w3-round-large.w3-teal(href="/noticias/editar/" + n._id + "?visibilidade=visivel" class="fas fa-eye")
                           .w3-half
-                            a.w3-btn.w3-right.w3-round-large.w3-red(href="/noticias/eliminar/" + n._id) Eliminar
+                            a.w3-btn.w3-right.w3-round-large.w3-red(href="/noticias/eliminar/" + n._id class="fas fa-trash") 
 
             else 
               each n in noticias
                 if n.visivel
-                  li 
+                  li.w3-center 
                     b=n.nome  
                     |  #{n.acao} a #{n.data}
           else
             li Não há notícias...
-
+  else
+    .w3-container 
+      h1.w3-center Repositório de Recursos Didáticos
+    .w3-container.w3-display-middle
+      img(src="./images/favicon.png" style="width=80%").w3-auto

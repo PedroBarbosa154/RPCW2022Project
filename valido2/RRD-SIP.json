@@ -1,0 +1,19 @@
+{
+    "version": "1.0",
+    "encoding": "UTF-8",
+    "algorithm": "sha256",
+    "data": [
+        {
+            "checksum": "12e598daecade60b04e493f45c134fec9287ac7471114d95d1995b4fb651a6c8",
+            "path": "metadata.json"
+        },
+        {
+            "checksum": "9de14c5619a0d6ca231f652d473861aead9f6cdeaf80cc17ad3e61827ec01d56",
+            "path": "data/resource1/eg21tp3.pdf"  
+        },
+        {
+            "checksum": "9d2e30e2b38eb7c4c50f8119e17116778c975f3550dcfb6970201967b0496b1c",
+            "path": "data/resource1/projeto-rpcw2022-enunciado.pdf"  
+        }
+    ]
+}

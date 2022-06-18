@@ -24,7 +24,7 @@ router.get('/', function(req, res, next) {
       .then(noticias => {
         var noticias = noticias.data
         // console.log(noticias)
-        res.render('index',{logged:'true',nivel:req.cookies.nivel, noticias: noticias});
+        res.render('index',{title: 'Homepage',logged:'true',nivel:req.cookies.nivel, noticias: noticias});
       })
       .catch(error => {
         console.log(error)
@@ -32,7 +32,7 @@ router.get('/', function(req, res, next) {
       })
   }
   else
-    res.render('index')
+    res.render('index',{title:'Homepage'})
 });
 
 router.get('/registar', (req,res) => {

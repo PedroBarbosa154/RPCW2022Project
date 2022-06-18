@@ -19,9 +19,9 @@ block content
                             tr
                                 td= c.username
                                 td
-                                    a.w3-btn.w3-round-large.w3-teal(href='/users/editar?user='+c.username) Editar
+                                    a.w3-btn.w3-round-large.w3-teal(href='/users/editar?user='+c.username class="fas fa-pen")
                                 td
-                                    a.w3-btn.w3-round-large.w3-red(href='/users/eliminar/' + c.username) Eliminar
+                                    a.w3-btn.w3-round-large.w3-red(href='/users/eliminar/' + c.username class="fas fa-trash") 
         .w3-half.w3-container
             if produtores.length == 0
                 p Não há utilizadores com o nível de produtor!
@@ -35,6 +35,6 @@ block content
                             tr
                                 td= p.username
                                 td
-                                    a.w3-btn.w3-round-large.w3-teal(href='/users/editar?user=' + p.username) Editar
+                                    a.w3-btn.w3-round-large.w3-teal(href='/users/editar?user=' + p.username class="fas fa-pen") 
                                 td
-                                    a.w3-btn.w3-round-large.w3-red(href='/users/eliminar?user=' + p.username) Eliminar
+                                    a.w3-btn.w3-round-large.w3-red(href='/users/eliminar?user=' + p.username class="fas fa-trash") 

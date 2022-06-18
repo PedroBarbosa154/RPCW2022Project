@@ -41,9 +41,9 @@ block content
                             td= r.titulo 
                             td= r.tipo
                             td 
-                                a.w3-btn.w3-round-large.w3-teal(href='/recursos/editar/' + r._id) Editar
+                                a.w3-btn.w3-round-large.w3-teal(href='/recursos/editar/' + r._id class="fas fa-pen")
                             td
-                                a.w3-btn.w3-round-large.w3-red(href='/recursos/eliminar/' + r._id) Eliminar
+                                a.w3-btn.w3-round-large.w3-red(href='/recursos/eliminar/' + r._id class="fas fa-trash")
                             
         else if user.nivel == 'produtor' || user.nivel == 'admin'
             p Não há recursos submetidos por este utilizador...

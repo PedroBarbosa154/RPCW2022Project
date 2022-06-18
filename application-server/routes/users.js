@@ -116,7 +116,7 @@ router.get('/editar', verificaToken, (req,res,next) => {
       .then(dados => {
         // console.log(dados)
         var nivel = dados.data.nivel
-        res.render('editar_user',{title: 'Edição do utilizador ' + username + ' - ' + nivel, user: dados.data})
+        res.render('editar_user',{title: 'Edição do utilizador ' + username + ' - ' + nivel, user: dados.data, logged:'true',nivel:req.cookies.nivel})
       })
       .catch(error => {
         console.log('Erro ao consultar o utilizador ' + username)
@@ -143,7 +143,7 @@ router.post('/registar',(req,res,next) => {
   axios.post("http://localhost:3002/auth/registar", req.body)
       .then(() => {
         console.log("Registo bem sucedido"); 
-        res.redirect('/')
+        res.redirect('/login')
       })
       .catch(err => {
         console.log("Erro ao registar: " + err); 

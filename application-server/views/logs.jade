@@ -12,8 +12,8 @@ block content
               tr.w3-center
                 td.w3-center 
                   b #{log.user} 
-                  |  #{log.movimento} a #{log.data}
+                  | #{log.movimento} a #{log.data}
                 td
-                  a.w3-btn.w3-red.w3-right(href="/logs/delete/"+log.id) Delete
+                  a.w3-btn.w3-red.w3-right(href="/logs/delete/"+log.id class="fas fa-trash")
     else
       p.w3-center Ainda não existe registo de logs

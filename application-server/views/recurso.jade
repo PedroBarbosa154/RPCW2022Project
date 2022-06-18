@@ -4,8 +4,8 @@ block content
   include navbar.jade
   .w3-container
     .w3-container
-      h1.w3-margin-left= title 
-      a.w3-btn.w3-display-top.w3-margin-left.w3-border.w3-green(href="/recursos/download/"+recurso._id) Download
+      h1.w3-margin-left= title
+      a.w3-btn.w3-border.w3-margin-left.w3-green(href="/recursos/download/"+recurso._id) Download
 
     ul.w3-ul 
         li.w3-margin-left Id do recurso: #{recurso._id} 
@@ -15,6 +15,40 @@ block content
             span Likes: 
               input.w3-border-0(id="num_likes" value=recurso.likes)=recurso.likes
             if recurso.users_liked.includes(user)
-              a.w3-button.w3-light-green.w3-border.w3-small.w3-round(href="/recursos/atualizarLikes/" + recurso._id + "?tipo=dec" id="dislikeBtn") Like
+              a.w3-button.w3-light-green.w3-border.w3-small.w3-round(href="/recursos/atualizarLikes/" + recurso._id + "?tipo=dec" id="dislikeBtn" class="fas fa-thumbs-up")
             else
-              a.w3-button.w3-light-grey.w3-border.w3-small.w3-round(href="/recursos/atualizarLikes/" + recurso._id + "?tipo=inc" id="likeBtn") Like
+              a.w3-button.w3-light-grey.w3-border.w3-small.w3-round(href="/recursos/atualizarLikes/" + recurso._id + "?tipo=inc" id="likeBtn" class="fas fa-thumbs-up")
+        li
+          form.w3-container.w3-auto(action="/recursos/comentar/" + recurso._id + "?user=" + user method="POST")
+            .w3-row(style="display:flex")
+              textarea.w3-container(id="numbers" cols=100 rows=4 style="resize:none; width=100%"
+               placeholder="Caso pretenda tecer algum comentário sobre o recurso, faça-o aqui!" name="textarea")
+              button.w3-btn.w3-small.w3-round.w3-border.w3-light-green.w3-margin-left(type="submit") Comentar
+  .w3-container.w3-margin-left
+    h2 Ficheiros contidos neste recurso 
+    ul.w3-ul.w3-border
+      for f in ficheiros
+        li
+          .w3-row-padding
+            .w3-half
+              |  #{f.nome}
+            .w3-half
+              a.w3-btn.w3-green(href='/recursos/consultaOnline?path=' + f.filePath target="_blank" class="fas fa-search")
+  .w3-container
+    h3.w3-center Comentários
+    if comentarios.length > 0
+      table.w3-table-all.w3-center
+        th.w3-left Utilizador
+        th.w3-center Comentário
+        th.w3-right Data
+        each c in comentarios
+          tr
+            td.w3-left=c.user
+            td.w3-center=c.texto
+            td.w3-right=c.data
+            if user==c.user || nivel=='admin'
+              td
+                a.w3-right.w3-button.w3-round.w3-small.w3-red(href="/recursos/comentarios/eliminar/"+c._id+"?user="+c.user value="Delete" class="fas fa-trash")
+    else
+      p.w3-center Ainda não existem comentários a este recurso...
+

@@ -113,9 +113,12 @@ router.post("/upload", verificaToken, upload.single('myFile') , function(req,res
                         metadata.idProdutor = infoInfo.idProdutor
                         metadata.titulo = infoInfo.titulo
                         var tipos =['tese','enunciado','artigo','slides','relatorio'] 
-                        if (!(tipos.includes(infoInfo.tipo))) warnings.push("Tipo de recurso não aceite!")
-                        else
-                            metadata.tipo = infoInfo.tipo
+                        if (!(tipos.includes(infoInfo.tipo))) {
+                            informacao = 0
+                            warnings.push("Tipo de recurso não aceite!")
+                        }
+                        else metadata.tipo = infoInfo.tipo
+
                         console.log("Metadados válidos")
                     }
                 }
@@ -272,6 +275,26 @@ router.get('/', verificaToken, (req,res) => {
                 recurso = response.data
                 // console.log(recurso)
                 var decoded = jwt.decode(req.cookies.token,{complete:true})
+
+                var ficheirosObj = []
+                var pdir = path.normalize(__dirname+"/..")
+                let qpath = pdir + "/" + recurso.path
+                let tname = hash(recurso.titulo+recurso.dataCriacao)
+                let tname1 = tname.substring(0,tname.length/2)
+                let tname2 = tname.substring(tname.length/2+1,tname.length)
+                let npath = pdir + "/public/fileStorage/" + tname1 + "/" + tname2
+                var caminho = pdir+recurso.path
+                if(caminho == npath){
+                    var ficheiros = getFiles(caminho,ficheiros);
+                    console.log(ficheiros)
+                    ficheiros.forEach(f => {
+                        var fSplit = f.split('/')
+                        var size = fSplit.length 
+                        var nomeFicheiro = fSplit[size-1]
+                        ficheirosObj.push({filePath: f, nome: nomeFicheiro})
+                    })
+                }
+
                 var log = {}
                 log.user = decoded.payload.username;
                 log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
@@ -279,7 +302,17 @@ router.get('/', verificaToken, (req,res) => {
                 axios.post("http://localhost:3004/logs",log)
                     .then(dados => console.log("Log adicionado"))
                     .catch(err => {console.log("Erro ao enviar log: " + err)})
-                res.render('recurso',{title: recurso.titulo,user:decoded.payload.username ,recurso: recurso, logged:'true', nivel:req.cookies.nivel});
+                axios.get("http://localhost:3003/comentarios/" + idRecurso + "?token=" + req.cookies.token)
+                    .then(data => {
+                        if(data.data!=undefined) comentarios = data.data
+                        else comentarios = []
+                        console.log(ficheirosObj)
+                        res.render('recurso',{title: recurso.titulo,user:decoded.payload.username, comentarios:comentarios ,recurso: recurso, logged:'true', nivel:req.cookies.nivel, ficheiros: ficheirosObj});
+                    })
+                    .catch(err => {
+                        console.log("Erro ao apresentar recurso: " + err);
+                        res.render('error',{error:err})
+                    })
             })
             .catch(error => {
                 res.render('error', {error: error});
@@ -297,6 +330,18 @@ router.get('/', verificaToken, (req,res) => {
             })
     }
 });
+
+/* Visualizar um documento no browser (pdf ou xml) */
+router.get('/consultaOnline', verificaToken, (req, res, next) => {
+    var q = url.parse(req.url,true).query
+    if (q.path != undefined){
+        res.sendFile(q.path, (err) => {
+            if(err)
+                res.render('warnings', {warnings: ['O formato do ficheiro não é suportado pelo Browser!']})
+        })
+    } else 
+        res.render('warnings', {warnings: ['Falta indicar o id do recurso na query']})
+})
 
 router.get("/administrar", verificaToken, (req,res,next) => {
     var q = url.parse(req.url,true).query
@@ -487,7 +532,7 @@ router.get('/editar/:rid', (req,res,next) => {
                 // console.log(dados)
                 var tipo = dados.data.tipo
                 var titulo = dados.data.titulo
-                res.render('editar_recurso',{title: 'Edição do recurso ' + titulo + ' (' + tipo + ')', recurso: dados.data})
+                res.render('editar_recurso',{title: 'Edição do recurso ' + titulo + ' (' + tipo + ')', recurso: dados.data,logged:'true',nivel:req.cookies.nivel})
             })
             .catch(error => {
                 console.log('Erro ao consultar o recurso com o id ' + id)
@@ -580,48 +625,19 @@ router.get("/download/:rid", (req,res,next) => {
             var files = []
             if(npath == caminho){
                 files = getFiles(caminho,files);
-                files.forEach(f => {
+                files.forEach(f=>{
+                    console.log(f)
                     let caminho_file = f.split(tname2)[1]
-                    let caminho_pasta = ""
                     let caminhos_split = caminho_file.split('/')
-                    for(i=1;i<caminhos_split.length-1;i++) caminho_pasta += "/" + caminhos_split[i]
-                    // console.log("Caminho Pasta: " + caminho_pasta)
-                    // console.log("Caminho Ficheiro: " + caminho_file)
-                    let ficheiro = caminho_file.split('/')[caminho_file.split('/').length-1]
-                    // console.log("Ficheiro: "+ficheiro)
                     let checksum_info = {}
                     let caminho_checksum = ""
-                    for(i=2;i<caminhos_split.length-1;i++){
+                    for(i=2;i<caminhos_split.length;i++){
                         if (i==2) caminho_checksum += caminhos_split[i]
                         else caminho_checksum += "/" + caminhos_split[i]
                     }
                     checksum_info.checksum = hash(caminho_checksum)
                     checksum_info.path = caminho_checksum
                     rrd.data.push(checksum_info)
-                    // console.log("Caminho checksum: " + caminho_checksum)
-                    
-                    if(!fs.existsSync((final_path=path.join(temppath,caminho_pasta)))){
-                        console.log("Path temporario ainda não existe: " + final_path)
-                        // Cria a pasta temporária
-                        fs.mkdir(final_path, {recursive:true}, err=> {
-                            // Ir buscar o ficheiro e mover para a pasta temporária
-                            if(err) console.log("Erro ao criar pasta: " + err)
-                            else{
-                                sleep(300)
-                                .then(() => {
-                                    fs.copyFile(npath+caminho_file,final_path+"/"+ficheiro, (err)=> {
-                                        if (err) console.log("Erro ao copiar o ficheiro: " + err)
-                                    })
-                                })
-                            }
-                        }) 
-                    }else{
-                        // Se já existir a pasta temporária basta adicionar o ficheiro
-                        fs.copyFile(npath+caminho_file,final_path+"/"+ficheiro, (err)=> {
-                            if (err) console.log("Erro ao copiar o ficheiro: " + err)
-                        })
-                        console.log("Path temporário já existe")
-                    }
                 })
                 // No fim de ter a pasta temporária criada tenho de criar o ficheiro de metadados com a metadata
                 // e criar o manifesto RRD-SIP com os checksums calculados a partir da pasta data
@@ -629,7 +645,7 @@ router.get("/download/:rid", (req,res,next) => {
                 //Para cada ficheiro dentro da pasta data, calcular o checksum e guardar no json RRD-SIP
                 let manifest_json_info = JSON.stringify(rrd,null,4)
                 let caminho_completo = files[0].split(tname2)[1].split("data")[0]
-                // console.log(caminho_completo)
+                console.log(caminho_completo)
                 let json_split = caminho_completo.split('/')
                 // console.log(json_split)
                 let caminho_json = ""
@@ -638,66 +654,163 @@ router.get("/download/:rid", (req,res,next) => {
                 // Depois tenho de fazer o zip disto tudo
                 caminho_json = temppath+caminho_json
                 console.log(caminho_json)
-                sleep(300)
-                    .then(() => {
-                        if(fs.existsSync(caminho_json)){
-                            fs.writeFileSync(caminho_json+"/RRD-SIP.json",manifest_json_info)
-                            fs.writeFileSync(caminho_json+"/metadata.json",metadata_json_info)
-                        }else{
-                            console.log("Caminho temporário para escrita dos ficheiros JSON ainda não existe")
+                if(!fs.existsSync(caminho_json)){
+                    fs.mkdir(caminho_json, {recursive:true}, err => {
+                        if(err) console.log("Erro ao criar pasta temporaria: " + err) 
+                        else{
+                            fs.writeFile(caminho_json+"/RRD-SIP.json",manifest_json_info, err =>{if(err) console.log(err)})
+                            fs.writeFile(caminho_json+"/metadata.json",metadata_json_info, err =>{if(err) console.log(err)})
                         }
                     })
+                }else{
+                    console.log("Caminho temporário para escrita dos ficheiros JSON ainda não existe")
+                }
                 sleep(300)
-                    .then(() => {
-                        try {
-                            const zipper = new AdmZip();
-                            var outputFile = caminho_json+".zip";
-                            zipper.addLocalFolder(caminho_json);
-                            zipper.writeZip(outputFile);
-                            console.log(`Created ${outputFile} successfully`);
-                          } catch (e) {
-                            console.log(`Something went wrong. ${e}`);
-                          }
-
-                    })
-                // console.log("Cheguei aqui")
+                .then(() => {
+                    try {
+                        const zipper = new AdmZip();
+                        var outputFile = caminho_json+".zip";
+                        zipper.addLocalFolder(npath+caminho_completo);
+                        zipper.addLocalFile(caminho_json+"/RRD-SIP.json");
+                        zipper.addLocalFile(caminho_json+"/metadata.json");
+                        zipper.writeZip(outputFile);
+                        console.log(`Created ${outputFile} successfully`);
+                    } catch (e) {
+                        console.log(`Something went wrong. ${e}`);
+                    }
+                })
+            //     // console.log("Cheguei aqui")
                 sleep(500)
-                    .then(() => {
-                        res.download(caminho_json+".zip", err=> {
-                            if (err){
-                                console.log("Erro ao descarregar ficheiro: " +  err)
-                                // res.redirect("/")
+                .then(() => {
+                    res.download(caminho_json+".zip", err=> {
+                        if (err){
+                            console.log("Erro ao descarregar ficheiro: " +  err)
+                            // res.redirect("/")
+                        }else{
+                            if(fs.existsSync(temppath)){
+                                fs.rmSync(temppath, {recursive:true});
                             }else{
-                                if(fs.existsSync(temppath)){
-                                    fs.rmSync(temppath, {recursive:true});
-                                }else{
-                                    console.log("Pasta a eliminar não existente")
-                                }
-                                console.log("Download bem sucedido")
-                                var decoded = jwt.decode(req.cookies.token,{complete:true})
-                                var log = {}
-                                log.user = decoded.payload.username;
-                                log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
-                                log.movimento = "descarregou o recurso " + files[0].split(tname2)[1].split('/')[files[0].split(tname2)[1].split('/').length-1]
-                                axios.post("http://localhost:3004/logs",log)
-                                  .then(dados => console.log("Log adicionado"))
-                                  .catch(err => {console.log("Erro ao enviar log: " + err)})
-                                // console.log("Entrei aqui")
+                                console.log("Pasta a eliminar não existente")
                             }
-                        })
+                            console.log("Download bem sucedido")
+                            var decoded = jwt.decode(req.cookies.token,{complete:true})
+                            var log = {}
+                            log.user = decoded.payload.username;
+                            log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
+                            log.movimento = "descarregou o recurso " + files[0].split(tname2)[1].split('/')[files[0].split(tname2)[1].split('/').length-1]
+                            axios.post("http://localhost:3004/logs",log)
+                            .then(dados => console.log("Log adicionado"))
+                            .catch(err => {console.log("Erro ao enviar log: " + err)})
+                            // console.log("Entrei aqui")
+                        }
                     })
-                // res.redirect("/")
+                })
             }
-            else{
-                console.log("Pasta não existente")
-                res.redirect("/")
-            }          
-        })
+                // res.redirect("/")
+            })
         .catch(erro => {
             console.log("Erro ao descarregar ficheiro: " + erro);
             res.render('error',{error:erro})
         })
 });
 
+ /* --------------------------------------- Comentarios --------------------------------------- */
+router.post("/comentar/:rid", verificaToken,(req,res,next) => {
+    var q = url.parse(req.url,true).query
+    // console.log(q)
+    if(q.user!=undefined){
+        comentario = {
+            user: q.user,
+            texto: req.body.textarea,
+            idRecurso: req.params.rid
+        }
+        axios.post("http://localhost:3003/comentarios?token="+req.cookies.token,comentario)
+            .then(data => {
+                console.log("Comentario adicionado")
+                axios.get("http://localhost:3003/api/recursos/"+req.params.rid+"?token="+req.cookies.token)
+                    .then(dados => {
+                        //Criar notícia e log para o comentário
+                        var decoded = jwt.decode(req.cookies.token,{complete:true})
+                        var noticia = {
+                            nome: decoded.payload.username,
+                            acao: 'comentou um recurso',
+                            data: new Date().toISOString().slice(0, 16).split('T').join(' '),
+                            idRecurso: req.params.rid,
+                            visivel: true
+                        }
+                        axios.post('http://localhost:3003/noticias?token=' + req.cookies.token, noticia)
+                            .then(resposta => {
+                                // console.log(resposta)
+                                var log = {}
+                                log.user = decoded.payload.username;
+                                log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
+                                log.movimento = "adicionou um comentário ao recurso " + dados.data.titulo
+                                axios.post("http://localhost:3004/logs",log)
+                                    .then(dados => console.log("Log adicionado"))
+                                    .catch(err => {console.log("Erro ao enviar log: " + err)})
+                            })
+                            .catch(err => {
+                                console.log("Erro ao enviar noticia para a BD: " + err)
+                                res.render('error',{error:err})
+                            })
+                        res.redirect("/recursos?id="+req.params.rid)
+                    })
+                    .catch(err =>{
+                        console.log("Erro ao obter recurso: " + err)
+                    })
+            })
+            .catch(err => {
+                console.log("Erro ao inserir comentario: " + err)
+            })
+    }else{
+        console.log("Erro ao comentar, utilizador não identificado!")
+    }
+})
+
+router.get("/comentarios/eliminar/:rid", verificaToken,(req,res,next) => {
+    var q = url.parse(req.url,true).query
+    if(q.user!=undefined)
+        axios.delete("http://localhost:3003/comentarios/"+req.params.rid+"?token="+req.cookies.token+"&user="+q.user)
+            .then(resp => {
+                axios.get("http://localhost:3003/api/recursos/"+resp.data.idRecurso+"?token="+req.cookies.token)
+                    .then(dados => {
+                        console.log(dados)
+                        var decoded = jwt.decode(req.cookies.token,{complete:true})
+                        var noticia = {
+                            nome: decoded.payload.username,
+                            acao: 'eliminou um comentário',
+                            data: new Date().toISOString().slice(0, 16).split('T').join(' '),
+                            idRecurso: req.params.rid,
+                            visivel: true
+                        }
+                        axios.post('http://localhost:3003/noticias?token=' + req.cookies.token, noticia)
+                            .then(resposta => {
+                                var log = {}
+                                log.user = decoded.payload.username;
+                                log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
+                                log.movimento = "eliminou um comentário do recurso " + dados.data.titulo
+                                axios.post("http://localhost:3004/logs",log)
+                                    .then(dados => console.log("Log adicionado"))
+                                    .catch(err => {console.log("Erro ao enviar log: " + err)})
+                                res.redirect("/recursos?id="+resp.data.idRecurso)
+                            })
+                            .catch(err => {
+                                console.log("Erro ao enviar noticia para a BD: " + err)
+                                res.render('error',{error:err})
+                            })
+                    })
+                    .catch(err =>{
+                        console.log("Erro ao obter recurso: " + err)
+                    })
+            })
+            .catch(err => {
+                console.log("Erro ao eliminar comentario")
+                res.render('error',{error:err})
+            })
+    else{
+        console.log("Não pode efetuar esta ação")
+        res.render('warnings',{warnings:["Não tem permissão para realizar esta ação!"]})
+    }
+})
 
 module.exports = router;

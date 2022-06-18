@@ -1,8 +1,8 @@
-const path = 'metadata.json';
 const { createHash } = require('crypto');
+const { stdout } = require('process');
 
 function hash(string){
     return createHash('sha256').update(string).digest('hex');
 }
 
-console.log(hash(path));
+process.stdout.write(hash("data/resource1/projeto-rpcw2022-enunciado.pdf" ));

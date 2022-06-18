@@ -18,6 +18,7 @@ db.once('open',function(){
 
 var apiRouter = require('./routes/api');
 var noticiasRouter = require('./routes/noticias');
+var comentariosRouter = require('./routes/comentarios');
 
 var app = express();
 
@@ -54,6 +55,7 @@ app.use(function(req, res, next){
 
 app.use('/api', apiRouter);
 app.use('/noticias', noticiasRouter);
+app.use('/comentarios',comentariosRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
