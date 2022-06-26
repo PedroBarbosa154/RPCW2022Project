@@ -16,7 +16,7 @@ block content
                         th Título 
                         th Tipo de conteúdo
                     each r in recursos
-                        tr(data-href="http://localhost:3001/recursos?id=" + r._id)
+                        tr(data-href="http://localhost:8001/recursos?id=" + r._id)
                             td= r.dataCriacao
                             td= r.dataSubmissao
                             td= r.idProdutor

@@ -84,7 +84,7 @@ router.post('/login', function(req,res,next){
     log.user = user.username;
     log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
     log.movimento = "efetuou login"
-    axios.post("http://localhost:3004/logs",log)
+    axios.post("http://localhost:8004/logs",log)
       .then(dados => console.log("Log adicionado"))
       .catch(err => {console.log("Erro ao enviar log: " + err)})
   })(req,res,next)
@@ -102,7 +102,7 @@ router.post('/registar', function(req,res) {
       log.user = req.body.username;
       log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
       log.movimento = "registou-se"
-      axios.post("http://localhost:3004/logs",log)
+      axios.post("http://localhost:8004/logs",log)
         .then(dados => console.log("Log adicionado"))
         .catch(err => {console.log("Erro ao enviar log: " + err)})
       res.status(201).jsonp({dados: dados})
@@ -156,7 +156,7 @@ router.delete('/eliminar', verificaToken, function(req,res,next) {
       log.user = req.user.username;
       log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
       log.movimento = "eliminou o utilizador " + username;
-      axios.post("http://localhost:3004/logs",log)
+      axios.post("http://localhost:8004/logs",log)
         .then(dados => console.log("Log adicionado"))
         .catch(err => {console.log("Erro ao enviar log: " + err)})
       res.status(200).jsonp({dados: dados})
@@ -196,7 +196,7 @@ router.put('/users/editarPerfil/:username', verificaToken, function(req,res,next
                 log.user = userAntigo;
                 log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
                 log.movimento = "alterou o seu perfil"
-                axios.post("http://localhost:3004/logs",log)
+                axios.post("http://localhost:8004/logs",log)
                   .then(dados => console.log("Log adicionado"))
                   .catch(err => {console.log("Erro ao enviar log: " + err)})
                 console.log('ANTES DO PUT')
@@ -205,12 +205,12 @@ router.put('/users/editarPerfil/:username', verificaToken, function(req,res,next
                   userAntigo: userAntigo,
                   userNovo: req.body.username
                 }
-                axios.put('http://localhost:3003/api/recursos/atualizarUser?token=' + token, mudancas)
+                axios.put('http://localhost:8003/api/recursos/atualizarUser?token=' + token, mudancas)
                   .then(dados => {
                     console.log('Atualizado com sucesso nos recursos ' + JSON.stringify(dados.data))
                   })
                   .catch(err => {console.log("Erro ao atualizar as bds: " + err)})
-                axios.put('http://localhost:3003/noticias/atualizarUser?token=' + token, mudancas)
+                axios.put('http://localhost:8003/noticias/atualizarUser?token=' + token, mudancas)
                   .then(dados => {
                     console.log('Atualizado com sucesso nas noticias ' + JSON.stringify(dados.data))
                   })
@@ -250,7 +250,7 @@ router.put('/users',verificaToken,function(req,res,next){
         log.user = req.user.username;
         log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
         log.movimento = "alterou o nivel de " + username
-        axios.post("http://localhost:3004/logs",log)
+        axios.post("http://localhost:8004/logs",log)
           .then(dados => console.log("Log adicionado"))
           .catch(err => {console.log("Erro ao enviar log: " + err)})
         res.status(204).jsonp({dados: dados})

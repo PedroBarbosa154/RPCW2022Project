@@ -825,6 +825,126 @@
       "data": "2022-06-25 16:58",
       "movimento": "acedeu a página do recurso Enunciado EG v2",
       "id": 129
+    },
+    {
+      "user": "bond",
+      "data": "2022-06-26 13:47",
+      "movimento": "efetuou logout",
+      "id": 130
+    },
+    {
+      "user": "user1",
+      "data": "2022-06-26 13:47",
+      "movimento": "efetuou login",
+      "id": 131
+    },
+    {
+      "user": "user1",
+      "data": "2022-06-26 13:50",
+      "movimento": "efetuou logout",
+      "id": 132
+    },
+    {
+      "user": "bond",
+      "data": "2022-06-26 13:50",
+      "movimento": "efetuou login",
+      "id": 133
+    },
+    {
+      "user": "bond",
+      "data": "2022-06-26 13:50",
+      "movimento": "editou a noticia 62b73ecc93b01b96f749bcbb",
+      "id": 134
+    },
+    {
+      "user": "bond",
+      "data": "2022-06-26 13:50",
+      "movimento": "acedeu a página do recurso Enunciado EG v2",
+      "id": 136
+    },
+    {
+      "user": "bond",
+      "data": "2022-06-26 13:50",
+      "movimento": "descarregou o recurso eg21tp3.pdf",
+      "id": 137
+    },
+    {
+      "user": "bond",
+      "data": "2022-06-26 13:50",
+      "movimento": "adicionou um comentário ao recurso Enunciado EG v2",
+      "id": 138
+    },
+    {
+      "user": "bond",
+      "data": "2022-06-26 13:50",
+      "movimento": "acedeu a página do recurso Enunciado EG v2",
+      "id": 139
+    },
+    {
+      "user": "bond",
+      "data": "2022-06-26 13:50",
+      "movimento": "deu like no recurso Enunciado EG v2",
+      "id": 140
+    },
+    {
+      "user": "bond",
+      "data": "2022-06-26 13:50",
+      "movimento": "acedeu a página do recurso Enunciado EG v2",
+      "id": 141
+    },
+    {
+      "user": "bond",
+      "data": "2022-06-26 13:50",
+      "movimento": "acedeu a página do recurso Enunciado EG",
+      "id": 142
+    },
+    {
+      "user": "bond",
+      "data": "2022-06-26 13:51",
+      "movimento": "editou o recurso Enunciado EG (editado)",
+      "id": 143
+    },
+    {
+      "user": "bond",
+      "data": "2022-06-26 13:51",
+      "movimento": "efetuou logout",
+      "id": 144
+    },
+    {
+      "user": "user2",
+      "data": "2022-06-26 13:51",
+      "movimento": "efetuou login",
+      "id": 145
+    },
+    {
+      "user": "user2",
+      "data": "2022-06-26 13:51",
+      "movimento": "acedeu a página do recurso Enunciado EG v2",
+      "id": 146
+    },
+    {
+      "user": "user2",
+      "data": "2022-06-26 13:51",
+      "movimento": "adicionou um comentário ao recurso Enunciado EG v2",
+      "id": 147
+    },
+    {
+      "user": "user2",
+      "data": "2022-06-26 13:51",
+      "movimento": "acedeu a página do recurso Enunciado EG v2",
+      "id": 148
+    },
+    {
+      "user": "user2",
+      "data": "2022-06-26 13:51",
+      "movimento": "deu like no recurso Enunciado EG v2",
+      "id": 149
+    },
+    {
+      "user": "user2",
+      "data": "2022-06-26 13:51",
+      "movimento": "acedeu a página do recurso Enunciado EG v2",
+      "id": 150
     }
   ]
 }
