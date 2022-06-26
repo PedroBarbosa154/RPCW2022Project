@@ -189,7 +189,7 @@ router.post("/upload", verificaToken, upload.single('myFile') , function(req,res
     let npath = pdir + "/public/fileStorage/" + tname1 + "/" + tname2
     if(!fs.existsSync(npath)){
         metadata.path = "/public/fileStorage/" + tname1 + "/" + tname2
-        axios.post("http://localhost:3003/api/recursos?token=" + req.cookies.token,metadata)
+        axios.post("http://localhost:8003/api/recursos?token=" + req.cookies.token,metadata)
             .then(dados => {
                 var idRecurso = dados.data._id
                 fs.mkdir(npath, {recursive:true}, err => {
@@ -210,14 +210,14 @@ router.post("/upload", verificaToken, upload.single('myFile') , function(req,res
                                     idRecurso: idRecurso,
                                     visivel: true
                                 }
-                                axios.post('http://localhost:3003/noticias?token=' + req.cookies.token, noticia)
+                                axios.post('http://localhost:8003/noticias?token=' + req.cookies.token, noticia)
                                     .then(resposta => {
                                         // console.log(resposta)
                                         var log = {}
                                         log.user = username;
                                         log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
                                         log.movimento = "efetuou o upload de " + metadata.titulo
-                                        axios.post("http://localhost:3004/logs",log)
+                                        axios.post("http://localhost:8004/logs",log)
                                           .then(dados => console.log("Log adicionado"))
                                           .catch(err => {console.log("Erro ao enviar log: " + err)})
                                         zip.close()
@@ -270,7 +270,7 @@ router.get('/', verificaToken, (req,res) => {
         //Apresentar a página de um recurso específico
         var idRecurso = q.id
         // console.log('Listar recurso com id ' + idRecurso)
-        axios.get('http://localhost:3003/api/recursos/' + idRecurso + "?token=" + req.cookies.token)
+        axios.get('http://localhost:8003/api/recursos/' + idRecurso + "?token=" + req.cookies.token)
             .then(response => {
                 recurso = response.data
                 // console.log(recurso)
@@ -299,10 +299,10 @@ router.get('/', verificaToken, (req,res) => {
                 log.user = decoded.payload.username;
                 log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
                 log.movimento = "acedeu a página do recurso " + recurso.titulo
-                axios.post("http://localhost:3004/logs",log)
+                axios.post("http://localhost:8004/logs",log)
                     .then(dados => console.log("Log adicionado"))
                     .catch(err => {console.log("Erro ao enviar log: " + err)})
-                axios.get("http://localhost:3003/comentarios/" + idRecurso + "?token=" + req.cookies.token)
+                axios.get("http://localhost:8003/comentarios/" + idRecurso + "?token=" + req.cookies.token)
                     .then(data => {
                         if(data.data!=undefined) comentarios = data.data
                         else comentarios = []
@@ -320,7 +320,7 @@ router.get('/', verificaToken, (req,res) => {
     }
     else{
         // console.log("Listar recursos")
-        axios.get('http://localhost:3003/api/recursos?token=' + req.cookies.token)
+        axios.get('http://localhost:8003/api/recursos?token=' + req.cookies.token)
             .then(response => {
                 recursos = response.data
                 res.render('recursos',{title: 'Recursos', recursos: recursos, logged:'true',nivel:req.cookies.nivel});
@@ -348,7 +348,7 @@ router.get("/administrar", verificaToken, (req,res,next) => {
     // console.log(q.tipo)
     if(req.cookies.nivel === 'admin')
         if(q.tipo!=undefined){
-            axios.get("http://localhost:3003/api/recursos?tipo=" + q.tipo + "&token=" + req.cookies.token)
+            axios.get("http://localhost:8003/api/recursos?tipo=" + q.tipo + "&token=" + req.cookies.token)
                 .then(data => {
                     res.render('recursos_admin',{title:'Recursos', recursos:data.data,logged:'true',nivel:req.cookies.nivel})
                 })
@@ -358,7 +358,7 @@ router.get("/administrar", verificaToken, (req,res,next) => {
         }
         else{
             // console.log("entrei aqui")
-            axios.get('http://localhost:3003/api/recursos?token=' + req.cookies.token)
+            axios.get('http://localhost:8003/api/recursos?token=' + req.cookies.token)
                     .then(response => {
                         recursos = response.data
                         res.render('recursos_admin',{title: 'Recursos', recursos: recursos, logged:'true',nivel:req.cookies.nivel});
@@ -374,14 +374,14 @@ router.get("/administrar", verificaToken, (req,res,next) => {
 router.get('/search', (req,res,next)=> {
     var q = url.parse(req.url,true).query
     if (q.search!=''){
-        axios.get("http://localhost:3003/api/recursos?search=" + q.search + "&token=" + req.cookies.token)
+        axios.get("http://localhost:8003/api/recursos?search=" + q.search + "&token=" + req.cookies.token)
             .then(data => {
                 var decoded = jwt.decode(req.cookies.token,{complete:true})
                 var log = {}
                 log.user = decoded.payload.username;
                 log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
                 log.movimento = "pesquisou por " + "'" + q.search + "'"
-                axios.post("http://localhost:3004/logs",log)
+                axios.post("http://localhost:8004/logs",log)
                   .then(dados => console.log("Log adicionado"))
                   .catch(err => {console.log("Erro ao enviar log: " + err)})
                 res.render('recursos',{recursos:data.data,logged:'true',nivel:req.cookies.nivel})
@@ -399,14 +399,14 @@ router.get('/search', (req,res,next)=> {
 router.get("/tipo", (req,res,next) =>{
     var q = url.parse(req.url,true).query
     if(q.tipo!=''){
-        axios.get("http://localhost:3003/api/recursos?tipo="+q.tipo+"&token="+req.cookies.token)
+        axios.get("http://localhost:8003/api/recursos?tipo="+q.tipo+"&token="+req.cookies.token)
             .then(data => {
                 var decoded = jwt.decode(req.cookies.token,{complete:true})
                 var log = {}
                 log.user = decoded.payload.username;
                 log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
                 log.movimento = "pesquisou pelo tipo " + q.tipo
-                axios.post("http://localhost:3004/logs",log)
+                axios.post("http://localhost:8004/logs",log)
                   .then(dados => console.log("Log adicionado"))
                   .catch(err => {console.log("Erro ao enviar log: " + err)})
                 res.render('recursos',{recursos:data.data,logged:'true',nivel:req.cookies.nivel})
@@ -425,7 +425,7 @@ router.get("/atualizarLikes/:rid",(req,res,next)=>{
     var q = url.parse(req.url,true).query
     if(q.tipo!=undefined){
         // console.log(q.tipo)
-        axios.put("http://localhost:3003/api/recursos/" + req.params.rid + "/atualizarLikes?tipo="+q.tipo+"&token="+req.cookies.token)
+        axios.put("http://localhost:8003/api/recursos/" + req.params.rid + "/atualizarLikes?tipo="+q.tipo+"&token="+req.cookies.token)
             .then(dados=>{
                 // console.log("Likes atualizado")
                 var log = {}
@@ -433,7 +433,7 @@ router.get("/atualizarLikes/:rid",(req,res,next)=>{
                 log.user = decoded.payload.username;
                 log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
                 log.movimento = (q.tipo=='inc' ? "deu like" : "deu dislike") + " no recurso " + dados.data.titulo
-                axios.post("http://localhost:3004/logs",log)
+                axios.post("http://localhost:8004/logs",log)
                   .then(dados => console.log("Log adicionado"))
                   .catch(err => {console.log("Erro ao enviar log: " + err)})
                 var noticia = {
@@ -443,7 +443,7 @@ router.get("/atualizarLikes/:rid",(req,res,next)=>{
                     idRecurso: req.params.rid,
                     visivel: true
                 }
-                axios.post('http://localhost:3003/noticias?token=' + req.cookies.token, noticia)
+                axios.post('http://localhost:8003/noticias?token=' + req.cookies.token, noticia)
                     .then(() => console.log('Notícia nova adicionada (like de recurso)'))
                     .catch(err => res.render('error', {error: err}))
                 res.redirect("/recursos?id="+req.params.rid)
@@ -464,7 +464,7 @@ router.get('/eliminar/:id', (req,res,next) => {
         // console.log(id)
         //Remover do fileStorage
         //É preciso um get dos metadados deste recurso
-        axios.get("http://localhost:3003/api/recursos/" + id + "?token=" + req.cookies.token)
+        axios.get("http://localhost:8003/api/recursos/" + id + "?token=" + req.cookies.token)
             .then(resposta => {
                 // console.log(resposta)
                 var metadata = resposta.data 
@@ -482,7 +482,7 @@ router.get('/eliminar/:id', (req,res,next) => {
                 }else{
                     console.log("Pasta a eliminar não existente")
                 }
-                axios.delete('http://localhost:3003/api/recursos/' + id + '?token=' + req.cookies.token)
+                axios.delete('http://localhost:8003/api/recursos/' + id + '?token=' + req.cookies.token)
                     .then(resposta => {
                         // console.log('Recurso eliminado com sucesso')
                         //console.log(metadata)
@@ -493,7 +493,7 @@ router.get('/eliminar/:id', (req,res,next) => {
                         log.user = decoded.payload.username;
                         log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
                         log.movimento = "removeu o recurso " + resposta.data.titulo
-                        axios.post("http://localhost:3004/logs",log)
+                        axios.post("http://localhost:8004/logs",log)
                           .then(dados => console.log("Log adicionado"))
                           .catch(err => {console.log("Erro ao enviar log: " + err)})
                         var noticia = {
@@ -503,7 +503,7 @@ router.get('/eliminar/:id', (req,res,next) => {
                             idRecurso: req.params.id,
                             visivel: true
                         }
-                        axios.post('http://localhost:3003/noticias?token=' + req.cookies.token, noticia)
+                        axios.post('http://localhost:8003/noticias?token=' + req.cookies.token, noticia)
                             .then(() => console.log('Notícia nova adicionada (remoção de recurso)'))
                             .catch(err => res.render('error', {error: err}))
                         if (req.cookies.nivel == 'admin')
@@ -527,7 +527,7 @@ router.get('/editar/:rid', (req,res,next) => {
     var id = req.params.rid
     if (id != undefined) {
         console.log(id)
-        axios.get('http://localhost:3003/api/recursos/' + id + '?token=' + req.cookies.token)
+        axios.get('http://localhost:8003/api/recursos/' + id + '?token=' + req.cookies.token)
             .then(dados => {
                 // console.log(dados)
                 var tipo = dados.data.tipo
@@ -544,7 +544,7 @@ router.get('/editar/:rid', (req,res,next) => {
 router.post('/editar/:rid', verificaToken, (req,res,next) => {
     var recursoAtualizado = req.body
     // console.log(recursoAtualizado)
-    axios.put('http://localhost:3003/api/recursos/' + req.params.rid + '?token=' + req.cookies.token, recursoAtualizado)
+    axios.put('http://localhost:8003/api/recursos/' + req.params.rid + '?token=' + req.cookies.token, recursoAtualizado)
         .then(resposta => {
             // console.log(resposta)
             var decoded = jwt.decode(req.cookies.token,{complete:true})
@@ -552,7 +552,7 @@ router.post('/editar/:rid', verificaToken, (req,res,next) => {
             log.user = decoded.payload.username;
             log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
             log.movimento = "editou o recurso " + recursoAtualizado.titulo
-            axios.post("http://localhost:3004/logs",log)
+            axios.post("http://localhost:8004/logs",log)
               .then(dados => console.log("Log adicionado"))
               .catch(err => {console.log("Erro ao enviar log: " + err)})
             //Adicionar uma nova notícia
@@ -563,7 +563,7 @@ router.post('/editar/:rid', verificaToken, (req,res,next) => {
                 idRecurso: req.params.rid,
                 visivel: true
             }
-            axios.post('http://localhost:3003/noticias?token=' + req.cookies.token, noticia)
+            axios.post('http://localhost:8003/noticias?token=' + req.cookies.token, noticia)
                 .then(() => console.log('Notícia nova adicionada (edição de recurso)'))
                 .catch(err => res.render('error', {error: err}))
             if (req.cookies.nivel == 'admin')
@@ -594,7 +594,7 @@ function getFiles (dir, files_){
 
 
 router.get("/download/:rid", (req,res,next) => {
-    axios.get("http://localhost:3003/api/recursos/"+req.params.rid+"?token="+req.cookies.token)
+    axios.get("http://localhost:8003/api/recursos/"+req.params.rid+"?token="+req.cookies.token)
         .then(data => {
             var recurso = data.data
             // Metadados
@@ -698,7 +698,7 @@ router.get("/download/:rid", (req,res,next) => {
                             log.user = decoded.payload.username;
                             log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
                             log.movimento = "descarregou o recurso " + files[0].split(tname2)[1].split('/')[files[0].split(tname2)[1].split('/').length-1]
-                            axios.post("http://localhost:3004/logs",log)
+                            axios.post("http://localhost:8004/logs",log)
                             .then(dados => console.log("Log adicionado"))
                             .catch(err => {console.log("Erro ao enviar log: " + err)})
                             // console.log("Entrei aqui")
@@ -724,10 +724,10 @@ router.post("/comentar/:rid", verificaToken,(req,res,next) => {
             texto: req.body.textarea,
             idRecurso: req.params.rid
         }
-        axios.post("http://localhost:3003/comentarios?token="+req.cookies.token,comentario)
+        axios.post("http://localhost:8003/comentarios?token="+req.cookies.token,comentario)
             .then(data => {
                 console.log("Comentario adicionado")
-                axios.get("http://localhost:3003/api/recursos/"+req.params.rid+"?token="+req.cookies.token)
+                axios.get("http://localhost:8003/api/recursos/"+req.params.rid+"?token="+req.cookies.token)
                     .then(dados => {
                         //Criar notícia e log para o comentário
                         var decoded = jwt.decode(req.cookies.token,{complete:true})
@@ -738,14 +738,14 @@ router.post("/comentar/:rid", verificaToken,(req,res,next) => {
                             idRecurso: req.params.rid,
                             visivel: true
                         }
-                        axios.post('http://localhost:3003/noticias?token=' + req.cookies.token, noticia)
+                        axios.post('http://localhost:8003/noticias?token=' + req.cookies.token, noticia)
                             .then(resposta => {
                                 // console.log(resposta)
                                 var log = {}
                                 log.user = decoded.payload.username;
                                 log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
                                 log.movimento = "adicionou um comentário ao recurso " + dados.data.titulo
-                                axios.post("http://localhost:3004/logs",log)
+                                axios.post("http://localhost:8004/logs",log)
                                     .then(dados => console.log("Log adicionado"))
                                     .catch(err => {console.log("Erro ao enviar log: " + err)})
                             })
@@ -770,9 +770,9 @@ router.post("/comentar/:rid", verificaToken,(req,res,next) => {
 router.get("/comentarios/eliminar/:rid", verificaToken,(req,res,next) => {
     var q = url.parse(req.url,true).query
     if(q.user!=undefined)
-        axios.delete("http://localhost:3003/comentarios/"+req.params.rid+"?token="+req.cookies.token+"&user="+q.user)
+        axios.delete("http://localhost:8003/comentarios/"+req.params.rid+"?token="+req.cookies.token+"&user="+q.user)
             .then(resp => {
-                axios.get("http://localhost:3003/api/recursos/"+resp.data.idRecurso+"?token="+req.cookies.token)
+                axios.get("http://localhost:8003/api/recursos/"+resp.data.idRecurso+"?token="+req.cookies.token)
                     .then(dados => {
                         console.log(dados)
                         var decoded = jwt.decode(req.cookies.token,{complete:true})
@@ -783,13 +783,13 @@ router.get("/comentarios/eliminar/:rid", verificaToken,(req,res,next) => {
                             idRecurso: req.params.rid,
                             visivel: true
                         }
-                        axios.post('http://localhost:3003/noticias?token=' + req.cookies.token, noticia)
+                        axios.post('http://localhost:8003/noticias?token=' + req.cookies.token, noticia)
                             .then(resposta => {
                                 var log = {}
                                 log.user = decoded.payload.username;
                                 log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
                                 log.movimento = "eliminou um comentário do recurso " + dados.data.titulo
-                                axios.post("http://localhost:3004/logs",log)
+                                axios.post("http://localhost:8004/logs",log)
                                     .then(dados => console.log("Log adicionado"))
                                     .catch(err => {console.log("Erro ao enviar log: " + err)})
                                 res.redirect("/recursos?id="+resp.data.idRecurso)

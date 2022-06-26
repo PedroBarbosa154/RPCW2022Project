@@ -20,7 +20,7 @@ function verificaToken(req, res, next){
 router.get('/', function(req, res, next) {
   //Pedir à api os dados de todas as notícias visíveis
   if(req.cookies.token != undefined){
-    axios.get('http://localhost:3003/noticias?token=' + req.cookies.token)
+    axios.get('http://localhost:8003/noticias?token=' + req.cookies.token)
       .then(noticias => {
         var noticias = noticias.data
         // console.log(noticias)

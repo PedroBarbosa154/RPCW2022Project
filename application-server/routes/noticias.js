@@ -28,7 +28,7 @@ router.get('/editar/:idNoticia', verificaToken, (req,res,next) => {
                 visibilidade = false
             else
                 visibilidade = true
-            axios.put('http://localhost:3003/noticias/' + idNoticia + '?token=' + req.cookies.token, {visivel: visibilidade})
+            axios.put('http://localhost:8003/noticias/' + idNoticia + '?token=' + req.cookies.token, {visivel: visibilidade})
                 .then(resposta => {
                     //console.log(resposta)
                     var decoded = jwt.decode(req.cookies.token,{complete:true})
@@ -36,7 +36,7 @@ router.get('/editar/:idNoticia', verificaToken, (req,res,next) => {
                     log.user = decoded.payload.username;
                     log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
                     log.movimento = "editou a noticia " + idNoticia
-                    axios.post("http://localhost:3004/logs",log)
+                    axios.post("http://localhost:8004/logs",log)
                       .then(dados => console.log("Log adicionado"))
                       .catch(err => {console.log("Erro ao enviar log: " + err)})
                     res.redirect('/')
@@ -58,7 +58,7 @@ router.get('/eliminar/:idNoticia', verificaToken, (req,res,next) => {
     if (req.cookies.nivel == 'admin'){
         var idNoticia = req.params.idNoticia
         if (idNoticia != undefined){
-            axios.delete('http://localhost:3003/noticias/' + idNoticia + '?token=' + req.cookies.token)
+            axios.delete('http://localhost:8003/noticias/' + idNoticia + '?token=' + req.cookies.token)
                 .then(resposta => {
                     //console.log(resposta)
                     var decoded = jwt.decode(req.cookies.token,{complete:true})
@@ -66,7 +66,7 @@ router.get('/eliminar/:idNoticia', verificaToken, (req,res,next) => {
                     log.user = decoded.payload.username;
                     log.data = new Date().toISOString().substring(0,16).split('T').join(' ');
                     log.movimento = "eliminou a noticia " + idNoticia
-                    axios.post("http://localhost:3004/logs",log)
+                    axios.post("http://localhost:8004/logs",log)
                       .then(dados => console.log("Log adicionado"))
                       .catch(err => {console.log("Erro ao enviar log: " + err)})
                     res.redirect('/')

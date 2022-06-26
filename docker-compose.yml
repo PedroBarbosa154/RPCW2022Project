@@ -1,0 +1,41 @@
+version: '3'
+services:
+  log-service:
+    restart: always
+    image: jprp111/log-server:2022
+    ports:
+      - 8004:8004
+  api-service:
+    restart: always
+    image: jprp111/api-server:2022
+    ports:
+      - 8003:8003
+    depends_on: 
+      - mongo
+  app-service:
+    restart: always
+    image: jprp111/app-server:2022
+    ports:
+      - 8001:8001
+    volumes:
+      - filesystem:/app/files
+    depends_on: 
+      - auth-service
+      - api-service
+      - log-service
+  auth-service:
+    restart: always
+    image: jprp111/auth-server:2022
+    ports:
+      - 8002:8002
+    depends_on: 
+      - mongo
+  mongo:
+    image: mongo
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb:/data/db
+volumes:
+ mongodb:
+ filesystem:

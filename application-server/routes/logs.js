@@ -21,7 +21,7 @@ router.get("/",verificaToken, (req,res,next)=>{
         res.render('warnings',{warnings:["Não tem permissão para aceder a esta página!"]})
     }
     else{
-        axios.get("http://localhost:3004/logs")
+        axios.get("http://localhost:8004/logs")
             .then(data => {
                 // console.log("Logs existentes")
                 // console.log(data)
@@ -40,7 +40,7 @@ router.post("/", verificaToken, (req,res,next)=>{
         res.render('warnings',{warnings:["Não tem permissão para aceder a esta página!"]})
     }
     else{
-        axios.post("http://localhost:3004/logs",req.body)
+        axios.post("http://localhost:8004/logs",req.body)
             .then(data => {
                 console.log("Logs adicionados")
             })
@@ -56,7 +56,7 @@ router.get("/delete/:id",verificaToken, (req,res,next)=>{
         res.render('warnings',{warnings:["Não tem permissão para aceder a esta página!"]})
     }
     else{
-        axios.delete("http://localhost:3004/logs/"+req.params.id,req.body)
+        axios.delete("http://localhost:8004/logs/"+req.params.id,req.body)
             .then(data => {
                 console.log("Log removido")
                 res.redirect("/logs")
